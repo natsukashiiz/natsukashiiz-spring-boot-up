@@ -1,6 +1,7 @@
 package com.natsukashiiz.iiboot.configuration.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -17,6 +18,6 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         log.debug("AuthEntryPointJwt-[Unauthorized]. error: {}", authException.getMessage());
         final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), "Unauthorized");
+        mapper.writeValue(response.getOutputStream(), ResponseUtil.unauthorized().getBody());
     }
 }

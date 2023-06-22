@@ -1,0 +1,25 @@
+spring:
+  main:
+    allow-circular-references: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:6033/blog_db?useUnicode=yes&characterEncoding=UTF-8
+    username: root
+    password: root
+  jpa:
+    show-sql: false
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+ii:
+  jwt:
+    issuer: natsukashiiz
+    expirationMs: 3600000
+    private-key: classpath:certs/private.pem
+    public-key: classpath:certs/public.pem
+  cors:
+
+#logging:
+#  level:
+#    com.natsukashiiz: DEBUG
+#    org.springframework.web: DEBUG

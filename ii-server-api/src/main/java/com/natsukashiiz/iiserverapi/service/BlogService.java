@@ -6,7 +6,9 @@ import com.natsukashiiz.iicommon.model.Pagination;
 import com.natsukashiiz.iicommon.utils.Comm;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iicommon.utils.ValidateUtil;
+import com.natsukashiiz.iiserverapi.Utils;
 import com.natsukashiiz.iiserverapi.entity.Blog;
+import com.natsukashiiz.iiserverapi.entity.Category;
 import com.natsukashiiz.iiserverapi.entity.User;
 import com.natsukashiiz.iiserverapi.model.request.BlogRequest;
 import com.natsukashiiz.iiserverapi.model.response.BlogResponse;
@@ -19,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -78,17 +79,25 @@ public class BlogService {
             return ResponseUtil.error(ResponseState.INVALID_REQUEST);
         }
 
+        if (Objects.isNull(request.getCategoryId())) {
+            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+        }
+
+        Category category = new Category();
+        category.setId(request.getCategoryId());
+
         Blog blog = new Blog();
         blog.setTitle(request.getTitle());
-        blog.setContent(request.getContent());
-        blog.setUser(getUserFromAuth(auth));
+        blog.setContent(Comm.encodeString(request.getContent()));
+        blog.setCategory(category);
+        blog.setUser(Utils.getUserFromAuth(auth));
 
         Blog save = blogRepository.save(blog);
         return ResponseUtil.success(buildResponse(save));
     }
 
     public ResponseEntity<?> update(UserDetailsImpl auth, Long id, BlogRequest request) {
-        Optional<Blog> opt = blogRepository.findByIdAndUser(id, getUserFromAuth(auth));
+        Optional<Blog> opt = blogRepository.findByIdAndUser(id, Utils.getUserFromAuth(auth));
         if (!opt.isPresent()) {
             return ResponseUtil.error(ResponseState.NOT_FOUND);
         }
@@ -99,7 +108,13 @@ public class BlogService {
         }
 
         if (Objects.nonNull(request.getContent())) {
-            blog.setContent(encodeString(request.getContent()));
+            blog.setContent(Comm.encodeString(request.getContent()));
+        }
+
+        if (Objects.nonNull(request.getCategoryId())) {
+            Category category = new Category();
+            category.setId(request.getCategoryId());
+            blog.setCategory(category);
         }
 
         Blog save = blogRepository.save(blog);
@@ -107,7 +122,7 @@ public class BlogService {
     }
 
     public ResponseEntity<?> publish(UserDetailsImpl auth, Long id) {
-        Optional<Blog> opt = blogRepository.findByIdAndUser(id, getUserFromAuth(auth));
+        Optional<Blog> opt = blogRepository.findByIdAndUser(id, Utils.getUserFromAuth(auth));
         if (!opt.isPresent()) {
             return ResponseUtil.error(ResponseState.NOT_FOUND);
         }
@@ -119,26 +134,12 @@ public class BlogService {
         return ResponseUtil.success(buildResponse(save));
     }
 
-    public User getUserFromAuth(UserDetailsImpl auth) {
-        User user = new User();
-        user.setId(auth.getId());
-        return user;
-    }
 
-    public String encodeString(String str) {
-        return Base64.getEncoder().encodeToString(str.getBytes());
-    }
-
-    public String decodeString(String str) {
-        byte[] decodedBytes = Base64.getDecoder().decode(str);
-        return new String(decodedBytes);
-    }
-
-    public BlogResponse buildResponse(Blog blog) {
+    public static BlogResponse buildResponse(Blog blog) {
         return BlogResponse.builder()
                 .id(blog.getId())
                 .title(blog.getTitle())
-                .content(Objects.nonNull(blog.getContent()) ? decodeString(blog.getContent()) : null)
+                .content(Comm.decodeString(blog.getContent()))
                 .category(blog.getCategory().getName())
                 .publish(blog.isPublish())
                 .cdt(blog.getCdt())
@@ -147,7 +148,7 @@ public class BlogService {
                 .build();
     }
 
-    public Page<BlogResponse> buildResponseList(Page<Blog> data, Pageable pageable) {
-        return data.stream().map(this::buildResponse).collect(Collectors.collectingAndThen(Collectors.toList(), list -> new PageImpl<>(list, pageable, list.size())));
+    public static Page<BlogResponse> buildResponseList(Page<Blog> data, Pageable pageable) {
+        return data.stream().map(BlogService::buildResponse).collect(Collectors.collectingAndThen(Collectors.toList(), list -> new PageImpl<>(list, pageable, list.size())));
     }
 }

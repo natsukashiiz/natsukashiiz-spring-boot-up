@@ -1,11 +1,13 @@
 package com.natsukashiiz.iiserverapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.natsukashiiz.iicommon.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @EqualsAndHashCode(callSuper = true)
@@ -13,9 +15,11 @@ import javax.persistence.ManyToOne;
 @Data
 public class Bookmark extends BaseEntity {
     @ManyToOne
-    @Column(name = "blog_id")
+    @JoinColumn(name = "blog_id")
     private Blog blog;
+
+    @JsonIgnore
     @ManyToOne
-    @Column(name = "uid")
+    @JoinColumn(name = "uid")
     private User user;
 }

@@ -2,8 +2,10 @@ package com.natsukashiiz.iiserverapi.controller;
 
 import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iicommon.model.Pagination;
+import com.natsukashiiz.iiserverapi.model.request.BookmarkRequest;
 import com.natsukashiiz.iiserverapi.model.request.ChangePasswordRequest;
 import com.natsukashiiz.iiserverapi.model.request.UpdateUserRequest;
+import com.natsukashiiz.iiserverapi.service.BookmarkService;
 import com.natsukashiiz.iiserverapi.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,9 +28,9 @@ public class UserApi {
     /**
      * {baseUrl}/signedHistory?page=1&limit=3&sortBy=cdt&sortType=desc
      */
-    @GetMapping("/signedHistory")
-    public ResponseEntity<?> signedHistory(@AuthenticationPrincipal UserDetailsImpl auth, Pagination pagination) {
-        return service.signedHistory(auth, pagination);
+    @GetMapping("/signHistory")
+    public ResponseEntity<?> signHistory(@AuthenticationPrincipal UserDetailsImpl auth, Pagination pagination) {
+        return service.signHistory(auth, pagination);
     }
 
     @PatchMapping

@@ -54,7 +54,7 @@ public class UserService {
         return ResponseUtil.success(response);
     }
 
-    public ResponseEntity<?> signedHistory(UserDetailsImpl auth, Pagination paginate) {
+    public ResponseEntity<?> signHistory(UserDetailsImpl auth, Pagination paginate) {
         Pageable pageable = Comm.getPaginate(paginate);
         User user = new User();
         user.setId(auth.getId());

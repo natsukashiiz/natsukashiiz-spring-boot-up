@@ -139,6 +139,7 @@ public class BlogService {
                 .id(blog.getId())
                 .title(blog.getTitle())
                 .content(Objects.nonNull(blog.getContent()) ? decodeString(blog.getContent()) : null)
+                .category(blog.getCategory().getName())
                 .publish(blog.isPublish())
                 .cdt(blog.getCdt())
                 .uid(blog.getUser().getId())

@@ -11,6 +11,7 @@ public class BlogResponse {
     private Long id;
     private String title;
     private String content;
+    private String category;
     private boolean publish;
     private LocalDateTime cdt;
     private Long uid;

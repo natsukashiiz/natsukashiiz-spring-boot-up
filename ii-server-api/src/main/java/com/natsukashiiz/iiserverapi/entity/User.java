@@ -31,4 +31,8 @@ public class User extends BaseEntity {
     @Fetch(value = FetchMode.SUBSELECT)
     @OneToMany(mappedBy = "user")
     private Set<SignHistory> signHistory;
+    @JsonIgnore
+    @Fetch(value = FetchMode.SUBSELECT)
+    @OneToMany(mappedBy = "user")
+    private Set<Bookmark> bookmarks;
 }

@@ -11,22 +11,14 @@ import javax.persistence.*;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
-@Entity(name = "ii_blogs")
+@Entity(name = "ii_categories")
 @Data
-public class Blog extends BaseEntity {
+public class Category extends BaseEntity {
     @Column(nullable = false)
-    private String title;
-    @Lob
-    private String content;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id")
-    private Category category;
-    private boolean publish;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "uid")
-    private User user;
+    private String name;
+
     @JsonIgnore
     @Fetch(value = FetchMode.SUBSELECT)
-    @OneToMany(mappedBy = "blog")
-    private Set<Bookmark> bookmarks;
+    @OneToMany(mappedBy = "category")
+    private Set<Blog> blogs;
 }

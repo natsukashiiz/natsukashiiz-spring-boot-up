@@ -16,4 +16,5 @@ public class BlogResponse {
     private LocalDateTime cdt;
     private Long uid;
     private String uname;
+    private boolean bookmark;
 }

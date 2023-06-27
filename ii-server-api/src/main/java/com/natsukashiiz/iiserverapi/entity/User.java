@@ -9,6 +9,7 @@ import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import java.util.Set;
 
@@ -33,6 +34,6 @@ public class User extends BaseEntity {
     private Set<SignHistory> signHistory;
     @JsonIgnore
     @Fetch(value = FetchMode.SUBSELECT)
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<Bookmark> bookmarks;
 }

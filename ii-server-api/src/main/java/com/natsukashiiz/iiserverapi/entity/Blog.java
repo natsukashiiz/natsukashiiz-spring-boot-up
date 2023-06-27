@@ -27,6 +27,6 @@ public class Blog extends BaseEntity {
     private User user;
     @JsonIgnore
     @Fetch(value = FetchMode.SUBSELECT)
-    @OneToMany(mappedBy = "blog")
+    @OneToMany(mappedBy = "blog", fetch = FetchType.EAGER)
     private Set<Bookmark> bookmarks;
 }

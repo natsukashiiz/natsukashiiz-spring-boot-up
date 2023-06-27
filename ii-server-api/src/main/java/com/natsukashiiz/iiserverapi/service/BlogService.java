@@ -8,6 +8,7 @@ import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iicommon.utils.ValidateUtil;
 import com.natsukashiiz.iiserverapi.Utils;
 import com.natsukashiiz.iiserverapi.entity.Blog;
+import com.natsukashiiz.iiserverapi.entity.Bookmark;
 import com.natsukashiiz.iiserverapi.entity.Category;
 import com.natsukashiiz.iiserverapi.entity.User;
 import com.natsukashiiz.iiserverapi.model.request.BlogRequest;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +38,7 @@ public class BlogService {
         this.userRepository = userRepository;
     }
 
-    public ResponseEntity<?> getById(Long id) {
+    public ResponseEntity<?> getById(UserDetailsImpl auth, Long id) {
         Optional<Blog> opt = blogRepository.findById(id);
         if (!opt.isPresent()) {
             return ResponseUtil.error(ResponseState.NOT_FOUND);
@@ -44,17 +46,17 @@ public class BlogService {
         return ResponseUtil.success(buildResponse(opt.get()));
     }
 
-    public ResponseEntity<?> getAll(Pagination pagination) {
+    public ResponseEntity<?> getAll(UserDetailsImpl auth, Pagination pagination) {
         long count = blogRepository.count();
         if (count == 0) {
             return ResponseUtil.error(ResponseState.NO_DATA);
         }
         Pageable paginate = Comm.getPaginate(pagination);
         Page<Blog> page = blogRepository.findByPublish(true, paginate);
-        return ResponseUtil.successList(buildResponseList(page, paginate));
+        return ResponseUtil.successList(buildResponseList(page, paginate, auth.getId()));
     }
 
-    public ResponseEntity<?> getByUser(String uname, Pagination pagination) {
+    public ResponseEntity<?> getByUser(UserDetailsImpl auth, String uname, Pagination pagination) {
         if (ValidateUtil.invalidUsername(uname)) {
             return ResponseUtil.error(ResponseState.INVALID_USERNAME);
         }
@@ -67,7 +69,7 @@ public class BlogService {
         Pageable paginate = Comm.getPaginate(pagination);
         User user = opt.get();
         Page<Blog> page = blogRepository.findByUser(user, paginate);
-        return ResponseUtil.successList(buildResponseList(page, paginate));
+        return ResponseUtil.successList(buildResponseList(page, paginate, auth.getId()));
     }
 
     public ResponseEntity<?> create(UserDetailsImpl auth, BlogRequest request) {
@@ -136,6 +138,10 @@ public class BlogService {
 
 
     public static BlogResponse buildResponse(Blog blog) {
+        return buildResponse(blog, null);
+    }
+
+    public static BlogResponse buildResponse(Blog blog, Long uid) {
         return BlogResponse.builder()
                 .id(blog.getId())
                 .title(blog.getTitle())
@@ -145,10 +151,20 @@ public class BlogService {
                 .cdt(blog.getCdt())
                 .uid(blog.getUser().getId())
                 .uname(blog.getUser().getUsername())
+                .bookmark(uid != null && bookmarked(blog.getBookmarks(), uid))
                 .build();
     }
 
+    public static boolean bookmarked(Set<Bookmark> bookmarks, Long uid) {
+        Bookmark bookmark = bookmarks.stream().filter(e -> Objects.equals(e.getUser().getId(), uid)).findAny().orElse(null);
+        return !Objects.isNull(bookmark);
+    }
+
     public static Page<BlogResponse> buildResponseList(Page<Blog> data, Pageable pageable) {
-        return data.stream().map(BlogService::buildResponse).collect(Collectors.collectingAndThen(Collectors.toList(), list -> new PageImpl<>(list, pageable, list.size())));
+        return buildResponseList(data, pageable, null);
+    }
+
+    public static Page<BlogResponse> buildResponseList(Page<Blog> data, Pageable pageable, Long uid) {
+        return data.stream().map(e -> buildResponse(e, uid)).collect(Collectors.collectingAndThen(Collectors.toList(), list -> new PageImpl<>(list, pageable, list.size())));
     }
 }

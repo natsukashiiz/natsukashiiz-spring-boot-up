@@ -13,6 +13,7 @@ import com.natsukashiiz.iiserverapi.repository.BookmarkRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -57,8 +58,11 @@ public class BookmarkService {
         return ResponseUtil.success();
     }
 
+    @Transactional
     public ResponseEntity<?> remove(UserDetailsImpl auth, Long id) {
-        bookmarkRepository.deleteByIdAndUser(id, Utils.getUserFromAuth(auth));
+        Blog blog = new Blog();
+        blog.setId(id);
+        bookmarkRepository.deleteByBlogAndUser(blog, Utils.getUserFromAuth(auth));
         return ResponseUtil.success();
     }
 }

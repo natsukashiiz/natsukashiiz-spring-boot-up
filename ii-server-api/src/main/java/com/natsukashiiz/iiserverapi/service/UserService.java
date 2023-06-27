@@ -50,6 +50,7 @@ public class UserService {
         }
 
         User user = opt.get();
+        log.info("DATA: {}", user.getBookmarks());
         UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }

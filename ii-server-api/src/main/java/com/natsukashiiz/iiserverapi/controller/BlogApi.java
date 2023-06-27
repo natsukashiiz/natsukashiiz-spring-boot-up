@@ -18,25 +18,25 @@ public class BlogApi {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAll(Pagination pagination) {
-        return blogService.getAll(pagination);
+    public ResponseEntity<?> getAll(@AuthenticationPrincipal UserDetailsImpl auth, Pagination pagination) {
+        return blogService.getAll(auth, pagination);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        return blogService.getById(id);
+    public ResponseEntity<?> getById(@AuthenticationPrincipal UserDetailsImpl auth, @PathVariable Long id) {
+        return blogService.getById(auth, id);
     }
 
     @GetMapping("/u/{uname}")
-    public ResponseEntity<?> getByUsername(@PathVariable String uname, Pagination pagination) {
-        return blogService.getByUser(uname, pagination);
+    public ResponseEntity<?> getByUsername(@AuthenticationPrincipal UserDetailsImpl auth, @PathVariable String uname, Pagination pagination) {
+        return blogService.getByUser(auth, uname, pagination);
     }
 
     @PostMapping
     public ResponseEntity<?> create(
             @AuthenticationPrincipal UserDetailsImpl auth,
             @RequestBody BlogRequest request
-            ) {
+    ) {
         return blogService.create(auth, request);
     }
 

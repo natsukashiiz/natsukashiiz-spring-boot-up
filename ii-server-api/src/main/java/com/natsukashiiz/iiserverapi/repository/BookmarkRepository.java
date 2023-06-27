@@ -10,5 +10,5 @@ import java.util.List;
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     long countByBlogAndUser(Blog blog, User user);
     List<Bookmark> findAllByUser(User user);
-    void deleteByIdAndUser(Long id, User user);
+    void deleteByBlogAndUser(Blog blog, User user);
 }

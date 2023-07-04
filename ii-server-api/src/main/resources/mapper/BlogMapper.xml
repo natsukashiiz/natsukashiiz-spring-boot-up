@@ -17,6 +17,6 @@
         <where>
             <if test="entity.uid != null">uid = #{entity.uid}</if>
         </where>ORDER BY id DESC
-        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.size}</if>
     </select>
 </mapper>

@@ -11,6 +11,7 @@ import com.natsukashiiz.iiserverapi.entity.Blog;
 import com.natsukashiiz.iiserverapi.entity.Bookmark;
 import com.natsukashiiz.iiserverapi.entity.Category;
 import com.natsukashiiz.iiserverapi.entity.User;
+import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
 import com.natsukashiiz.iiserverapi.model.request.BlogRequest;
 import com.natsukashiiz.iiserverapi.model.response.BlogResponse;
 import com.natsukashiiz.iiserverapi.repository.BlogRepository;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -32,6 +35,8 @@ import java.util.stream.Collectors;
 public class BlogService {
     private final BlogRepository blogRepository;
     private final UserRepository userRepository;
+
+    @Resource private BlogMapper blogMapper;
 
     public BlogService(BlogRepository blogRepository, UserRepository userRepository) {
         this.blogRepository = blogRepository;
@@ -47,13 +52,8 @@ public class BlogService {
     }
 
     public ResponseEntity<?> getAll(UserDetailsImpl auth, Pagination pagination) {
-        long count = blogRepository.count();
-        if (count == 0) {
-            return ResponseUtil.error(ResponseState.NO_DATA);
-        }
-        Pageable paginate = Comm.getPaginate(pagination);
-        Page<Blog> page = blogRepository.findByPublish(true, paginate);
-        return ResponseUtil.successList(buildResponseList(page, paginate, auth.getId()));
+        List<Blog> all = blogMapper.findAll();
+        return ResponseUtil.successList(all);
     }
 
     public ResponseEntity<?> getByUser(UserDetailsImpl auth, String uname, Pagination pagination) {

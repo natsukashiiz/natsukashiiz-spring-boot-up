@@ -6,6 +6,8 @@ import com.natsukashiiz.iicommon.model.PaginationResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
 public class ResponseUtil {
 
     public static <E> ResponseEntity<?> success() {
@@ -13,6 +15,16 @@ public class ResponseUtil {
     }
 
     public static <E> ResponseEntity<?> success(E result) {
+        ResponseState code = ResponseState.SUCCESS;
+        BaseResponse<?> response = BaseResponse.builder()
+                .code(code.getValue())
+                .text(code)
+                .result(result)
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    public static <E> ResponseEntity<?> successList(List<E> result) {
         ResponseState code = ResponseState.SUCCESS;
         BaseResponse<?> response = BaseResponse.builder()
                 .code(code.getValue())

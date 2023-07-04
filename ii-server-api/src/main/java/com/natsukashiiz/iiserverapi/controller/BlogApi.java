@@ -15,16 +15,13 @@ import org.springframework.web.bind.annotation.*;
 public class BlogApi {
     private final BlogService blogService;
 
-    @Autowired
-    private BlogMapper blogMapper;
-
     public BlogApi(BlogService blogService) {
         this.blogService = blogService;
     }
 
     @GetMapping
     public ResponseEntity<?> getAll(@AuthenticationPrincipal UserDetailsImpl auth, Pagination pagination) {
-        return ResponseEntity.ok(blogMapper.findAll());
+        return ResponseEntity.ok(blogService.getAll(auth, pagination));
     }
 
     @GetMapping("/{id}")

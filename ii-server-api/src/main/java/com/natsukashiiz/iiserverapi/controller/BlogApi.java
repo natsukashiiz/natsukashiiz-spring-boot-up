@@ -24,7 +24,7 @@ public class BlogApi {
 
     @GetMapping
     public ResponseEntity<?> getAll(@AuthenticationPrincipal UserDetailsImpl auth, Pagination pagination) {
-        return ResponseEntity.ok(blogMapper.findById(4L));
+        return ResponseEntity.ok(blogMapper.findAll());
     }
 
     @GetMapping("/{id}")

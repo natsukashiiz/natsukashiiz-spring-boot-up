@@ -15,7 +15,6 @@ import com.natsukashiiz.iiserverapi.mapper.UserMapper;
 import com.natsukashiiz.iiserverapi.model.request.*;
 import com.natsukashiiz.iiserverapi.model.response.UserResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

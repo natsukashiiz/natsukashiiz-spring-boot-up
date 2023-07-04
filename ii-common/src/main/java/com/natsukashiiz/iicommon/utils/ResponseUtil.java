@@ -2,8 +2,6 @@ package com.natsukashiiz.iicommon.utils;
 
 import com.natsukashiiz.iicommon.common.ResponseState;
 import com.natsukashiiz.iicommon.model.BaseResponse;
-import com.natsukashiiz.iicommon.model.PaginationResponse;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -31,25 +29,6 @@ public class ResponseUtil {
                 .text(code)
                 .result(result)
                 .records((long) result.size())
-                .build();
-        return ResponseEntity.ok(response);
-    }
-
-    public static <T> ResponseEntity<?> successList(Page<T> result) {
-        PaginationResponse pagination = PaginationResponse.builder()
-                .limit(result.getPageable().getPageSize())
-                .current(result.getPageable().getPageNumber() + 1)
-                .records((int) result.getTotalElements())
-                .pages(result.getTotalPages())
-                .first(result.isFirst())
-                .last(result.isLast())
-                .build();
-        ResponseState code = ResponseState.SUCCESS;
-        BaseResponse<?> response = BaseResponse.builder()
-                .code(code.getValue())
-                .result(result.getContent())
-                .text(code)
-                .pagination(pagination)
                 .build();
         return ResponseEntity.ok(response);
     }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.natsukashiiz.iiserverapi.mapper.BlogMapper">
+    <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.Blog">
+        SELECT * FROM ii_blogs
+    </select>
+    <select id="findById" resultType="com.natsukashiiz.iiserverapi.entity.Blog">
+        SELECT * FROM ii_blogs WHERE id = #{id}
+    </select>
+    <select id="findByUid" resultType="com.natsukashiiz.iiserverapi.entity.Blog">
+        SELECT * FROM ii_blogs WHERE uid = #{uid}
+    </select>
+    <select id="findBy" resultType="com.natsukashiiz.iiserverapi.entity.Blog">
+        SELECT * FROM ii_blogs
+        <where>
+            <if test="entity.uid != null">uid = #{entity.uid}</if>
+        </where>ORDER BY id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+    </select>
+</mapper>

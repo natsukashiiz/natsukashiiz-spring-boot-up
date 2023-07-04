@@ -1,3 +1,7 @@
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
 spring:
   main:
     allow-circular-references: true
@@ -17,6 +21,8 @@ ii:
     expirationMs: 31556952000
     private-key: classpath:certs/private.pem
     public-key: classpath:certs/public.pem
-
 server:
   port: 8080
+logging:
+  level:
+    com.natsukashiiz.iiserverapi: DEBUG

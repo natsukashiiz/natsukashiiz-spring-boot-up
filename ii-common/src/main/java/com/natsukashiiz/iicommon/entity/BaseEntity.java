@@ -16,7 +16,7 @@ public class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Integer state = 10;
+    private Integer state;
     @CreationTimestamp
     private LocalDateTime cdt;
     @UpdateTimestamp

@@ -2,8 +2,10 @@ package com.natsukashiiz.iiserverapi.controller;
 
 import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iicommon.model.Pagination;
+import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
 import com.natsukashiiz.iiserverapi.model.request.BlogRequest;
 import com.natsukashiiz.iiserverapi.service.BlogService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,13 +15,16 @@ import org.springframework.web.bind.annotation.*;
 public class BlogApi {
     private final BlogService blogService;
 
+    @Autowired
+    private BlogMapper blogMapper;
+
     public BlogApi(BlogService blogService) {
         this.blogService = blogService;
     }
 
     @GetMapping
     public ResponseEntity<?> getAll(@AuthenticationPrincipal UserDetailsImpl auth, Pagination pagination) {
-        return blogService.getAll(auth, pagination);
+        return ResponseEntity.ok(blogMapper.findById(4L));
     }
 
     @GetMapping("/{id}")

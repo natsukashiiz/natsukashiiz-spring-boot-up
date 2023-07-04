@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.natsukashiiz.iiserverapi.mapper.UserMapper">
+    <select id="findOne" resultType="com.natsukashiiz.iiserverapi.entity.User">
+        SELECT id, email, username, `password`, state FROM ii_users WHERE
+        <choose>
+            <when test="id != null">id = #{id}</when>
+            <otherwise>
+                <if test="username != null">username = #{username}</if>
+            </otherwise>
+        </choose>
+        <if test="state != null">state = #{state}</if>
+    </select>
+    <select id="findById" resultType="com.natsukashiiz.iiserverapi.entity.User">
+        SELECT id, email, username, `password`, state FROM ii_users WHERE id = #{id}
+    </select>
+    <select id="hasId" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM ii_users WHERE id = #{id})
+    </select>
+    <select id="hasUsername" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM ii_users WHERE username = #{username})
+    </select>
+    <select id="hasEmail" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT 1 FROM ii_users WHERE email = #{email})
+    </select>
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO ii_users (email, username, `password`, state) VALUES(#{email}, #{username}, #{password}, #{state})
+    </insert>
+    <update id="update">
+        UPDATE ii_users
+        <set>
+            <if test="email != null">email = #{email}</if>
+            <if test="password != null">,`password` = #{password}</if>
+            <if test="state != null">,state = #{state}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+</mapper>

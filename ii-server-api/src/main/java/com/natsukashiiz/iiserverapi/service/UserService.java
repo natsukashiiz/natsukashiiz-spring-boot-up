@@ -4,6 +4,7 @@ import com.natsukashiiz.iiboot.configuration.jwt.Authentication;
 import com.natsukashiiz.iiboot.configuration.jwt.JwtService;
 import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iiboot.configuration.jwt.model.TokenResponse;
+import com.natsukashiiz.iicommon.common.CommonState;
 import com.natsukashiiz.iicommon.common.ResponseState;
 import com.natsukashiiz.iicommon.model.Pagination;
 import com.natsukashiiz.iicommon.utils.Comm;
@@ -11,6 +12,7 @@ import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iicommon.utils.ValidateUtil;
 import com.natsukashiiz.iiserverapi.entity.SignHistory;
 import com.natsukashiiz.iiserverapi.entity.User;
+import com.natsukashiiz.iiserverapi.mapper.UserMapper;
 import com.natsukashiiz.iiserverapi.model.request.*;
 import com.natsukashiiz.iiserverapi.model.response.UserResponse;
 import com.natsukashiiz.iiserverapi.repository.SignHistoryRepository;
@@ -24,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,6 +39,9 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService tokenService;
 
+    @Resource
+    private UserMapper userMapper;
+
     public UserService(UserRepository userRepository, SignHistoryRepository historyRepository, PasswordEncoder passwordEncoder, JwtService tokenService) {
         this.userRepository = userRepository;
         this.historyRepository = historyRepository;
@@ -44,13 +50,7 @@ public class UserService {
     }
 
     public ResponseEntity<?> getMe(UserDetailsImpl auth) {
-        Optional<User> opt = userRepository.findByUsername(auth.getUsername());
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.UNAUTHORIZED);
-        }
-
-        User user = opt.get();
-        log.info("DATA: {}", user.getBookmarks());
+        User user = userMapper.findById(auth.getId()).get();
         UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
@@ -68,15 +68,11 @@ public class UserService {
         if (ValidateUtil.invalidEmail(request.getEmail())) {
             return ResponseUtil.error(ResponseState.INVALID_EMAIL);
         }
-        Optional<User> opt = userRepository.findByUsername(auth.getUsername());
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.NOT_FOUND);
-        }
 
-        User user = opt.get();
+        User user = userMapper.findById(auth.getId()).get();
         user.setEmail(request.getEmail());
-        User save = userRepository.save(user);
-        UserResponse response = buildResponse(save);
+        userMapper.save(user);
+        UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
 
@@ -93,12 +89,7 @@ public class UserService {
             return ResponseUtil.error(ResponseState.PASSWORD_NOT_MATCH);
         }
 
-        Optional<User> opt = userRepository.findByUsername(auth.getUsername());
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.NOT_FOUND);
-        }
-
-        User user = opt.get();
+        User user = userMapper.findById(auth.getId()).get();
 
         // check password
         if (matchPassword(request.getCurrentPassword(), user.getPassword())) {
@@ -109,8 +100,8 @@ public class UserService {
         String passwordEncoded = passwordEncoder.encode(request.getNewPassword());
 
         user.setPassword(passwordEncoded);
-        User save = userRepository.save(user);
-        UserResponse response = buildResponse(save);
+        userMapper.save(user);
+        UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
 
@@ -136,12 +127,12 @@ public class UserService {
         String password = request.getPassword();
 
         // check email existed
-        if (userRepository.existsByEmail(email)) {
+        if (userMapper.hasEmail(email)) {
             return ResponseUtil.error(ResponseState.EXISTED_EMAIL);
         }
 
         // check username existed
-        if (userRepository.existsByUsername(username)) {
+        if (userMapper.hasUsername(username)) {
             return ResponseUtil.error(ResponseState.EXISTED_USERNAME);
         }
 
@@ -149,14 +140,15 @@ public class UserService {
         String passwordEncoded = passwordEncoder.encode(password);
 
         // to entity
-        User entity = new User();
-        entity.setEmail(email);
-        entity.setUsername(username);
-        entity.setPassword(passwordEncoded);
+        User user = new User();
+        user.setEmail(email);
+        user.setUsername(username);
+        user.setPassword(passwordEncoded);
+        user.setState(CommonState.NORMAL.getValue());
 
         // save
-        User save = userRepository.save(entity);
-        UserResponse response = buildResponse(save);
+        userMapper.save(user);
+        UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
 
@@ -178,9 +170,12 @@ public class UserService {
 
         String username = request.getUsername();
         String password = request.getPassword();
+        User x = new User();
+        x.setUsername(username);
+
 
         // check user in db
-        Optional<User> opt = userRepository.findByUsername(username);
+        Optional<User> opt = userMapper.findOne(x);
 
         if (!opt.isPresent()) {
             log.debug("Login-[block]:(not found)");

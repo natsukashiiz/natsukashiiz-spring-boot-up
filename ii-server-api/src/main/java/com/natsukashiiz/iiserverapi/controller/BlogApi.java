@@ -21,7 +21,7 @@ public class BlogApi {
 
     @GetMapping
     public ResponseEntity<?> getAll(@AuthenticationPrincipal UserDetailsImpl auth, Pagination pagination) {
-        return ResponseEntity.ok(blogService.getAll(auth, pagination));
+        return blogService.getAll(auth, pagination);
     }
 
     @GetMapping("/{id}")

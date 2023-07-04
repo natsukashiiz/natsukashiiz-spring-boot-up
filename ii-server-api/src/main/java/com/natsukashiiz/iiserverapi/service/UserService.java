@@ -10,15 +10,11 @@ import com.natsukashiiz.iicommon.model.Pagination;
 import com.natsukashiiz.iicommon.utils.Comm;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iicommon.utils.ValidateUtil;
-import com.natsukashiiz.iiserverapi.entity.SignHistory;
-import com.natsukashiiz.iiserverapi.entity.User;
+import com.natsukashiiz.iiserverapi.entity.IIUser;
 import com.natsukashiiz.iiserverapi.mapper.UserMapper;
 import com.natsukashiiz.iiserverapi.model.request.*;
 import com.natsukashiiz.iiserverapi.model.response.UserResponse;
-import com.natsukashiiz.iiserverapi.repository.SignHistoryRepository;
-import com.natsukashiiz.iiserverapi.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,33 +30,21 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class UserService {
-    private final UserRepository userRepository;
-    private final SignHistoryRepository historyRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService tokenService;
-
+    @Resource
+    private PasswordEncoder passwordEncoder;
+    @Resource
+    private JwtService tokenService;
     @Resource
     private UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, SignHistoryRepository historyRepository, PasswordEncoder passwordEncoder, JwtService tokenService) {
-        this.userRepository = userRepository;
-        this.historyRepository = historyRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.tokenService = tokenService;
-    }
-
     public ResponseEntity<?> getMe(UserDetailsImpl auth) {
-        User user = userMapper.findById(auth.getId()).get();
+        IIUser user = userMapper.findById(auth.getId()).get();
         UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
 
     public ResponseEntity<?> signHistory(UserDetailsImpl auth, Pagination paginate) {
-        Pageable pageable = Comm.getPaginate(paginate);
-        User user = new User();
-        user.setId(auth.getId());
-        Page<SignHistory> histories = historyRepository.findByUser(user, pageable);
-        return ResponseUtil.successList(histories);
+        return ResponseUtil.success();
     }
 
 
@@ -69,7 +53,7 @@ public class UserService {
             return ResponseUtil.error(ResponseState.INVALID_EMAIL);
         }
 
-        User user = userMapper.findById(auth.getId()).get();
+        IIUser user = userMapper.findById(auth.getId()).get();
         user.setEmail(request.getEmail());
         userMapper.save(user);
         UserResponse response = buildResponse(user);
@@ -89,7 +73,7 @@ public class UserService {
             return ResponseUtil.error(ResponseState.PASSWORD_NOT_MATCH);
         }
 
-        User user = userMapper.findById(auth.getId()).get();
+        IIUser user = userMapper.findById(auth.getId()).get();
 
         // check password
         if (matchPassword(request.getCurrentPassword(), user.getPassword())) {
@@ -140,7 +124,7 @@ public class UserService {
         String passwordEncoded = passwordEncoder.encode(password);
 
         // to entity
-        User user = new User();
+        IIUser user = new IIUser();
         user.setEmail(email);
         user.setUsername(username);
         user.setPassword(passwordEncoded);
@@ -170,31 +154,29 @@ public class UserService {
 
         String username = request.getUsername();
         String password = request.getPassword();
-        User x = new User();
-        x.setUsername(username);
 
 
         // check user in db
-        Optional<User> opt = userMapper.findOne(x);
+        Optional<IIUser> opt = userMapper.findOne(new IIUser().setUsername(username));
 
         if (!opt.isPresent()) {
             log.debug("Login-[block]:(not found)");
             return ResponseUtil.error(ResponseState.INVALID_USERNAME_PASSWORD);
         }
 
-        User user = opt.get();
+        IIUser user = opt.get();
         if (matchPassword(password, user.getPassword())) {
             log.debug("Login-[block]:(incorrect password)");
             return ResponseUtil.error(ResponseState.INVALID_USERNAME_PASSWORD);
         }
 
         // save signed history
-        SignHistory history = new SignHistory();
-        history.setUser(user);
-        history.setIpv4(ipv4);
-        history.setDevice(Comm.getDeviceType(userAgent));
-        history.setUa(userAgent);
-        historyRepository.save(history);
+//        SignHistory history = new SignHistory();
+//        history.setUser(user);
+//        history.setIpv4(ipv4);
+//        history.setDevice(Comm.getDeviceType(userAgent));
+//        history.setUa(userAgent);
+//        historyRepository.save(history);
 
         // generate token
         return ResponseUtil.success(this.token(user));
@@ -211,16 +193,16 @@ public class UserService {
         }
 
         String username = tokenService.getUsername(refreshToken);
-        Optional<User> opt = userRepository.findByUsername(username);
+        Optional<IIUser> opt = userMapper.findOne(new IIUser().setUsername(username));
         if (!opt.isPresent()) {
             return ResponseUtil.error(ResponseState.UNAUTHORIZED);
         }
-        User user = opt.get();
+        IIUser user = opt.get();
         TokenResponse token = token(user);
         return ResponseUtil.success(token);
     }
 
-    public TokenResponse token(User user) {
+    public TokenResponse token(IIUser user) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         return tokenService.generateToken(
@@ -235,7 +217,7 @@ public class UserService {
         return !passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
-    public UserResponse buildResponse(User user) {
+    public UserResponse buildResponse(IIUser user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())

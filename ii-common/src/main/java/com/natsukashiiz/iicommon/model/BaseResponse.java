@@ -16,5 +16,6 @@ public class BaseResponse<E> {
     @Enumerated(value = EnumType.STRING)
     private ResponseState text;
     private E result;
+    private Long records;
     private PaginationResponse pagination;
 }

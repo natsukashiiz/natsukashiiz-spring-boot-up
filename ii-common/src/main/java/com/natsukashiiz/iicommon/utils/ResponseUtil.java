@@ -30,6 +30,7 @@ public class ResponseUtil {
                 .code(code.getValue())
                 .text(code)
                 .result(result)
+                .records((long) result.size())
                 .build();
         return ResponseEntity.ok(response);
     }

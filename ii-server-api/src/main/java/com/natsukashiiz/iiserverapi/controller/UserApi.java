@@ -2,10 +2,8 @@ package com.natsukashiiz.iiserverapi.controller;
 
 import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iicommon.model.Pagination;
-import com.natsukashiiz.iiserverapi.model.request.BookmarkRequest;
 import com.natsukashiiz.iiserverapi.model.request.ChangePasswordRequest;
 import com.natsukashiiz.iiserverapi.model.request.UpdateUserRequest;
-import com.natsukashiiz.iiserverapi.service.BookmarkService;
 import com.natsukashiiz.iiserverapi.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

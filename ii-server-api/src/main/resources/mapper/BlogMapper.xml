@@ -6,6 +6,15 @@
     <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT id, uid, content, title, publish, cdt FROM ii_blogs
     </select>
+    <select id="findOne" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT id, uid, content, title, publish, cdt FROM ii_blogs WHERE
+        <choose>
+            <when test="id != null">id = #{id}</when>
+            <otherwise>
+                <if test="uid != null">uid = #{username}</if>
+            </otherwise>
+        </choose>
+    </select>
     <select id="findById" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT id, uid, content, title, publish, cdt FROM ii_blogs WHERE id = #{id}
     </select>
@@ -19,11 +28,38 @@
         </where>ORDER BY id DESC
         <if test="page != null">LIMIT #{page.limit} OFFSET #{page.size}</if>
     </select>
-    <select id="findWithBookmark" resultType="com.natsukashiiz.iiserverapi.model.response.BlogResponse">
-        SELECT b.*, IFNULL((bm.uid = #{uid}), false) AS bookmark FROM ii_blogs b LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+    <select id="findByIdWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, IFNULL((bm.uid = #{uid}), false) AS bookmark
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+                 LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE b.id = #{id}
+    </select> <select id="findAllWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, IFNULL((bm.uid = #{uid}), false) AS bookmark
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+                 LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
     </select>
     <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
-        INSERT INTO ii_blogs(uid, title, content, category_id, state)
-        VALUES (#{uid}, #{title}, #{content}, #{categoryId}, #{state})
+        INSERT INTO ii_blogs(uid, title, content, category_id)
+        VALUES (#{uid}, #{title}, #{content}, #{categoryId})
     </insert>
+    <update id="update">
+        UPDATE ii_blogs
+        <set>
+            <if test="title != null">title = #{title}</if>
+            <if test="content != null">,content = #{content}</if>
+            <if test="categoryId != null">,category_id = #{categoryId}</if>
+        </set>
+        WHERE id = #{id} AND uid = #{uid}
+    </update>
+    <update id="publish">
+        UPDATE ii_blogs
+        <set>
+            publish = !publish, version = version + 1
+        </set>
+        WHERE id = #{id} AND uid = #{uid}
+    </update>
 </mapper>

@@ -1,8 +1,7 @@
 package com.natsukashiiz.iiserverapi.mapper;
 
 import com.natsukashiiz.iicommon.model.Pagination;
-import com.natsukashiiz.iiserverapi.entity.Blog;
-import com.natsukashiiz.iiserverapi.model.response.BlogResponse;
+import com.natsukashiiz.iiserverapi.entity.IIBlog;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -11,13 +10,24 @@ import java.util.Optional;
 
 @Mapper
 public interface BlogMapper {
-    List<Blog> findAll();
 
-    Optional<Blog> findById(Long id);
+    List<IIBlog> findAll();
 
-    List<Blog> findByUid(Long uid);
+    Optional<IIBlog> findOne(IIBlog blog);
 
-    List<Blog> findBy(@Param("entity") Blog entity, @Param("page") Pagination page);
+    Optional<IIBlog> findById(Long id);
 
-    List<BlogResponse> findWithBookmark(Long uid);
+    List<IIBlog> findByUid(Long uid);
+
+    List<IIBlog> findBy(@Param("entity") IIBlog entity, @Param("page") Pagination page);
+
+    Optional<IIBlog> findByIdWithBookmark(@Param("id") Long id, @Param("uid") Long uid);
+
+    List<IIBlog> findAllWithBookmark(Long uid);
+
+    Integer save(IIBlog blog);
+
+    Integer update(IIBlog blog);
+
+    Integer publish(@Param("id") Long id, @Param("uid") Long uid);
 }

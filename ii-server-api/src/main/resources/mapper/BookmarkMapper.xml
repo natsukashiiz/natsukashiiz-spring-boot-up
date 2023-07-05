@@ -36,13 +36,13 @@
                  INNER JOIN ii_users u on b.uid = u.id
         WHERE bm.uid = #{uid}
     </select>
-    <select id="hasIdAndUid" resultType="java.lang.Boolean">
-        SELECT COUNT(*) FROM ii_bookmarks WHERE id = #{id} AND uid = #{uid}
+    <select id="hasBlogIdAndUid" resultType="java.lang.Boolean">
+        SELECT COUNT(*) FROM ii_bookmarks WHERE blog_id = #{blogId} AND uid = #{uid}
     </select>
     <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO ii_bookmarks(blog_id, uid) VALUE(#{blogId}, #{uid})
     </insert>
     <delete id="remove">
-        DELETE FROM ii_bookmarks WHERE id = #{id} AND uid = #{uid}
+        DELETE FROM ii_bookmarks WHERE blog_id = #{blogId} AND uid = #{uid}
     </delete>
 </mapper>

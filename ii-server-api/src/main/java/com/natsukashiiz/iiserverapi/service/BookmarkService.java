@@ -36,7 +36,7 @@ public class BookmarkService {
             return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
         }
 
-        if (bookmarkMapper.hasIdAndUid(request.getBlogId(), auth.getId())) {
+        if (bookmarkMapper.hasBlogIdAndUid(request.getBlogId(), auth.getId())) {
             return ResponseUtil.error(ResponseState.EXISTED_BOOKMARK);
         }
 
@@ -49,7 +49,7 @@ public class BookmarkService {
     }
 
     public ResponseEntity<?> remove(UserDetailsImpl auth, Long id) {
-        if (!bookmarkMapper.hasIdAndUid(id, auth.getId())) {
+        if (!bookmarkMapper.hasBlogIdAndUid(id, auth.getId())) {
             return ResponseUtil.error(ResponseState.BOOKMARK_NOT_FOUND);
         }
 

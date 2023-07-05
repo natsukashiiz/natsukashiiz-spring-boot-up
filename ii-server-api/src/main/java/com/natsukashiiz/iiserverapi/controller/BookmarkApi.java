@@ -25,8 +25,8 @@ public class BookmarkApi {
         return bookmarkService.save(auth, request);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> remove(@AuthenticationPrincipal UserDetailsImpl auth, @PathVariable Long id) {
-        return bookmarkService.remove(auth, id);
+    @DeleteMapping("/{blogId}")
+    public ResponseEntity<?> remove(@AuthenticationPrincipal UserDetailsImpl auth, @PathVariable Long blogId) {
+        return bookmarkService.remove(auth, blogId);
     }
 }

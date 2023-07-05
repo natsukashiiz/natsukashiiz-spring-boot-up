@@ -3,9 +3,6 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.natsukashiiz.iiserverapi.mapper.BlogMapper">
-    <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
-        SELECT id, uid, content, title, publish, cdt FROM ii_blogs
-    </select>
     <select id="findOne" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT id, uid, content, title, publish, cdt FROM ii_blogs WHERE
         <choose>
@@ -16,10 +13,14 @@
         </choose>
     </select>
     <select id="findById" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
-        SELECT id, uid, content, title, publish, cdt FROM ii_blogs WHERE id = #{id}
+        SELECT id, uid, content, title, publish, cdt
+        FROM ii_blogs
+        WHERE id = #{id}
     </select>
     <select id="findByUid" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
-        SELECT id, uid, content, title, publish, cdt FROM ii_blogs WHERE uid = #{uid}
+        SELECT id, uid, content, title, publish, cdt
+        FROM ii_blogs
+        WHERE uid = #{uid}
     </select>
     <select id="findBy" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT id, uid, content, title, publish, cdt FROM ii_blogs
@@ -29,21 +30,55 @@
         ORDER BY id DESC
         <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
-    <select id="findByIdWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
-        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, IFNULL((bm.uid = #{uid}), false) AS bookmark
+    <select id="findByUname" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.publish,
+               b.cdt,
+               c.name                           AS category,
+               u.username                       AS uname
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
                  INNER JOIN ii_users u ON b.uid = u.id
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
-        WHERE b.id = #{id}
-    </select> <select id="findAllWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
-        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, IFNULL((bm.uid = #{uid}), false) AS bookmark
+        WHERE u.username = #{uname}
+    </select>
+    <select id="findByUnameWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.publish,
+               b.cdt,
+               c.name                           AS category,
+               u.username                       AS uname,
+               IFNULL((bm.uid = #{uid}), false) AS bookmark
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
                  INNER JOIN ii_users u ON b.uid = u.id
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE u.username = #{uname}
+    </select>
+    <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname
+        FROM ii_blogs b
+        INNER JOIN ii_categories c ON b.category_id = c.id
+        INNER JOIN ii_users u ON b.uid = u.id
+        LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
         ORDER BY id DESC
-    <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+    </select>
+    <select id="findAllWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname
+        <if test="uid != null">, IFNULL((bm.uid = #{uid}), false) AS bookmark</if>
+        FROM ii_blogs b
+        INNER JOIN ii_categories c ON b.category_id = c.id
+        INNER JOIN ii_users u ON b.uid = u.id
+        LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        ORDER BY id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
     <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO ii_blogs(uid, title, content, category_id)
@@ -66,6 +101,8 @@
         WHERE id = #{id} AND uid = #{uid}
     </update>
     <select id="hasId" resultType="java.lang.Boolean">
-        SELECT COUNT(1) FROM ii_blogs WHERE id = #{id}
+        SELECT COUNT(1)
+        FROM ii_blogs
+        WHERE id = #{id}
     </select>
 </mapper>

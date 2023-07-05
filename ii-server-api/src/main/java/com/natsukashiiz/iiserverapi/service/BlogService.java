@@ -9,6 +9,7 @@ import com.natsukashiiz.iicommon.utils.ValidateUtil;
 import com.natsukashiiz.iiserverapi.entity.IIBlog;
 import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
 import com.natsukashiiz.iiserverapi.mapper.CategoryMapper;
+import com.natsukashiiz.iiserverapi.mapper.UserMapper;
 import com.natsukashiiz.iiserverapi.model.request.BlogRequest;
 import com.natsukashiiz.iiserverapi.model.response.BlogResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +31,11 @@ public class BlogService {
     @Resource
     private CategoryMapper categoryMapper;
 
+    @Resource
+    private UserMapper userMapper;
+
     public ResponseEntity<?> getById(UserDetailsImpl auth, Long id) {
-        Optional<IIBlog> opt = blogMapper.findByIdWithBookmark(id, auth.getId());
+        Optional<IIBlog> opt = blogMapper.findById(id);
         if (!opt.isPresent()) {
             return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
         }
@@ -39,7 +43,12 @@ public class BlogService {
     }
 
     public ResponseEntity<?> getAll(UserDetailsImpl auth, Pagination pagination) {
-        List<IIBlog> blogs = blogMapper.findAllWithBookmark(auth.getId(), pagination);
+        List<IIBlog> blogs;
+        if (Objects.isNull(auth.getId())) {
+            blogs = blogMapper.findAll();
+        } else {
+            blogs = blogMapper.findAllWithBookmark(auth.getId(), pagination);
+        }
         return ResponseUtil.successList(buildResponseList(blogs));
     }
 
@@ -48,8 +57,17 @@ public class BlogService {
             return ResponseUtil.error(ResponseState.INVALID_USERNAME);
         }
 
-        List<IIBlog> blogs = blogMapper.findByUid(auth.getId());
-        return ResponseUtil.successList(blogs);
+        if (!userMapper.hasUsername(uname)) {
+            return ResponseUtil.error(ResponseState.NOT_FOUND);
+        }
+        List<IIBlog> blogs;
+        if (Objects.nonNull(auth.getId())) {
+            blogs = blogMapper.findByUnameWithBookmark(uname, auth.getId());
+        } else {
+            blogs = blogMapper.findByUname(uname);
+        }
+
+        return ResponseUtil.successList(buildResponseList(blogs));
     }
 
     public ResponseEntity<?> create(UserDetailsImpl auth, BlogRequest request) {
@@ -72,7 +90,7 @@ public class BlogService {
         IIBlog blog = new IIBlog();
         blog.setUid(auth.getId());
         blog.setTitle(request.getTitle());
-        blog.setContent(request.getContent());
+        blog.setContent(Comm.encodeString(request.getContent()));
         blog.setCategoryId(request.getCategoryId());
 
         blogMapper.save(blog);
@@ -91,7 +109,7 @@ public class BlogService {
 
         IIBlog blog = opt.get();
         blog.setTitle(request.getTitle());
-        blog.setContent(request.getContent());
+        blog.setContent(Comm.encodeString(request.getContent()));
         blog.setCategoryId(request.getCategoryId());
         blogMapper.update(blog);
         return ResponseUtil.success(buildResponse(blog));

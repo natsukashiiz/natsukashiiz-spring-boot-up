@@ -8,6 +8,6 @@ import java.util.List;
 public interface BookmarkMapper {
     List<IIBookmark> findByUid(Long uid);
     Integer save(IIBookmark entity);
-    Boolean hasIdAndUid(@Param("id") Long id, @Param("uid") Long uid);
-    Integer remove(@Param("id") Long id, @Param("uid") Long uid);
+    Boolean hasBlogIdAndUid(@Param("blogId") Long blogId, @Param("uid") Long uid);
+    Integer remove(@Param("blogId") Long blogId, @Param("uid") Long uid);
 }

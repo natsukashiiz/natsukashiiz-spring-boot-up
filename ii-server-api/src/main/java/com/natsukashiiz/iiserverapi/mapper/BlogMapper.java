@@ -11,7 +11,6 @@ import java.util.Optional;
 @Mapper
 public interface BlogMapper {
 
-    List<IIBlog> findAll();
 
     Optional<IIBlog> findOne(IIBlog blog);
 
@@ -21,7 +20,9 @@ public interface BlogMapper {
 
     List<IIBlog> findBy(@Param("entity") IIBlog entity, @Param("page") Pagination page);
 
-    Optional<IIBlog> findByIdWithBookmark(@Param("id") Long id, @Param("uid") Long uid);
+    List<IIBlog> findByUname(@Param("uname") String uname);
+    List<IIBlog> findByUnameWithBookmark(@Param("uname") String uname, @Param("uid") Long uid);
+    List<IIBlog> findAll();
 
     List<IIBlog> findAllWithBookmark(@Param("uid") Long uid, @Param("page") Pagination page);
 

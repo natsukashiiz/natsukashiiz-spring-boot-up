@@ -12,9 +12,9 @@ public class BlogResponse {
     private String title;
     private String content;
     private String category;
-    private boolean publish;
+    private Boolean publish;
     private LocalDateTime cdt;
     private Long uid;
     private String uname;
-    private boolean bookmark;
+    private Boolean bookmark;
 }

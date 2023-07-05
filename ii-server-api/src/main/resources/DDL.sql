@@ -63,3 +63,11 @@ CREATE TABLE IF NOT EXISTS ii_sign_history
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1000
     COMMENT 'table sign history';
+
+CREATE TABLE IF NOT EXISTS m_devices
+(
+    id   BIGINT UNSIGNED AUTO_INCREMENT      NOT NULL PRIMARY KEY COMMENT 'id',
+    `name` VARCHAR(20)                         NOT NULL COMMENT 'device name'
+) ENGINE = InnoDB
+    COMMENT 'table devices';
+

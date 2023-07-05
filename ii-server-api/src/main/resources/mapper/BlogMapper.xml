@@ -25,8 +25,9 @@
         SELECT id, uid, content, title, publish, cdt FROM ii_blogs
         <where>
             <if test="entity.uid != null">uid = #{entity.uid}</if>
-        </where>ORDER BY id DESC
-        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.size}</if>
+        </where>
+        ORDER BY id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
     <select id="findByIdWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, IFNULL((bm.uid = #{uid}), false) AS bookmark
@@ -41,6 +42,8 @@
                  INNER JOIN ii_categories c ON b.category_id = c.id
                  INNER JOIN ii_users u ON b.uid = u.id
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        ORDER BY id DESC
+    <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
     <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO ii_blogs(uid, title, content, category_id)
@@ -62,4 +65,7 @@
         </set>
         WHERE id = #{id} AND uid = #{uid}
     </update>
+    <select id="hasId" resultType="java.lang.Boolean">
+        SELECT COUNT(1) FROM ii_blogs WHERE id = #{id}
+    </select>
 </mapper>

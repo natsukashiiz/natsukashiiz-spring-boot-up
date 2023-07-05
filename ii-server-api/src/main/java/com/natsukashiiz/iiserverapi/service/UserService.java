@@ -10,7 +10,9 @@ import com.natsukashiiz.iicommon.model.Pagination;
 import com.natsukashiiz.iicommon.utils.Comm;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iicommon.utils.ValidateUtil;
+import com.natsukashiiz.iiserverapi.entity.IISignHistory;
 import com.natsukashiiz.iiserverapi.entity.IIUser;
+import com.natsukashiiz.iiserverapi.mapper.SignHistoryMapper;
 import com.natsukashiiz.iiserverapi.mapper.UserMapper;
 import com.natsukashiiz.iiserverapi.model.request.*;
 import com.natsukashiiz.iiserverapi.model.response.UserResponse;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -36,6 +39,8 @@ public class UserService {
     @Resource
     private UserMapper userMapper;
 
+    @Resource private SignHistoryMapper signHistoryMapper;
+
     public ResponseEntity<?> getMe(UserDetailsImpl auth) {
         IIUser user = userMapper.findById(auth.getId()).get();
         UserResponse response = buildResponse(user);
@@ -43,7 +48,8 @@ public class UserService {
     }
 
     public ResponseEntity<?> signHistory(UserDetailsImpl auth, Pagination paginate) {
-        return ResponseUtil.success();
+        List<IISignHistory> histories = signHistoryMapper.findByUid(auth.getId(), paginate);
+        return ResponseUtil.successList(histories);
     }
 
 
@@ -170,12 +176,13 @@ public class UserService {
         }
 
         // save signed history
-//        SignHistory history = new SignHistory();
-//        history.setUser(user);
-//        history.setIpv4(ipv4);
-//        history.setDevice(Comm.getDeviceType(userAgent));
-//        history.setUa(userAgent);
-//        historyRepository.save(history);
+        IISignHistory history = new IISignHistory();
+        history.setIpv4(ipv4);
+        history.setDevice(Comm.getDeviceType(userAgent));
+        history.setUa(userAgent);
+        history.setUid(user.getId());
+
+        signHistoryMapper.save(history);
 
         // generate token
         return ResponseUtil.success(this.token(user));
@@ -183,7 +190,7 @@ public class UserService {
 
     public ResponseEntity<?> refreshToken(TokenRefreshRequest request) {
         if (Objects.isNull(request.getRefreshToken())) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+            return ResponseUtil.error(ResponseState.INVALID_REFRESH_TOKEN);
         }
 
         String refreshToken = request.getRefreshToken();

@@ -8,6 +8,7 @@ import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iicommon.utils.ValidateUtil;
 import com.natsukashiiz.iiserverapi.entity.IIBlog;
 import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
+import com.natsukashiiz.iiserverapi.mapper.CategoryMapper;
 import com.natsukashiiz.iiserverapi.model.request.BlogRequest;
 import com.natsukashiiz.iiserverapi.model.response.BlogResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +27,19 @@ public class BlogService {
     @Resource
     private BlogMapper blogMapper;
 
+    @Resource
+    private CategoryMapper categoryMapper;
+
     public ResponseEntity<?> getById(UserDetailsImpl auth, Long id) {
         Optional<IIBlog> opt = blogMapper.findByIdWithBookmark(id, auth.getId());
         if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.NOT_FOUND);
+            return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
         }
         return ResponseUtil.success(buildResponse(opt.get()));
     }
 
     public ResponseEntity<?> getAll(UserDetailsImpl auth, Pagination pagination) {
-        List<IIBlog> blogs = blogMapper.findAllWithBookmark(auth.getId());
+        List<IIBlog> blogs = blogMapper.findAllWithBookmark(auth.getId(), pagination);
         return ResponseUtil.successList(buildResponseList(blogs));
     }
 
@@ -50,15 +54,19 @@ public class BlogService {
 
     public ResponseEntity<?> create(UserDetailsImpl auth, BlogRequest request) {
         if (Objects.isNull(request.getTitle())) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+            return ResponseUtil.error(ResponseState.INVALID_TITLE);
         }
 
         if (Objects.isNull(request.getContent())) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+            return ResponseUtil.error(ResponseState.INVALID_CONTENT);
         }
 
         if (Objects.isNull(request.getCategoryId())) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+            return ResponseUtil.error(ResponseState.INVALID_CATEGORY_ID);
+        }
+
+        if (!categoryMapper.hasId(request.getCategoryId())) {
+            return ResponseUtil.error(ResponseState.CATEGORY_NOT_FOUND);
         }
 
         IIBlog blog = new IIBlog();
@@ -78,7 +86,7 @@ public class BlogService {
 
         Optional<IIBlog> opt = blogMapper.findOne(find);
         if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.NOT_FOUND);
+            return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
         }
 
         IIBlog blog = opt.get();

@@ -23,11 +23,12 @@ public interface BlogMapper {
 
     Optional<IIBlog> findByIdWithBookmark(@Param("id") Long id, @Param("uid") Long uid);
 
-    List<IIBlog> findAllWithBookmark(Long uid);
+    List<IIBlog> findAllWithBookmark(@Param("uid") Long uid, @Param("page") Pagination page);
 
     Integer save(IIBlog blog);
 
     Integer update(IIBlog blog);
 
     Integer publish(@Param("id") Long id, @Param("uid") Long uid);
+    Boolean hasId(Long id);
 }

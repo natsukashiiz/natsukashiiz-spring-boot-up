@@ -12,15 +12,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/v1/users")
 public class UserApi {
-    private final UserService service;
+    private final UserService userService;
 
     public UserApi(UserService service) {
-        this.service = service;
+        this.userService = service;
     }
 
     @GetMapping
     public ResponseEntity<?> get(@AuthenticationPrincipal UserDetailsImpl auth) {
-        return service.getMe(auth);
+        return userService.getMe(auth);
     }
 
     /**
@@ -28,16 +28,16 @@ public class UserApi {
      */
     @GetMapping("/signHistory")
     public ResponseEntity<?> signHistory(@AuthenticationPrincipal UserDetailsImpl auth, Pagination pagination) {
-        return service.signHistory(auth, pagination);
+        return userService.signHistory(auth, pagination);
     }
 
     @PatchMapping
     public ResponseEntity<?> update(@AuthenticationPrincipal UserDetailsImpl auth, @RequestBody UpdateUserRequest request) {
-        return service.update(auth, request);
+        return userService.update(auth, request);
     }
 
     @PatchMapping("/password")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDetailsImpl auth, @RequestBody ChangePasswordRequest request) {
-        return service.changePassword(auth, request);
+        return userService.changePassword(auth, request);
     }
 }

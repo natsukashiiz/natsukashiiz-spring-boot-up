@@ -13,9 +13,19 @@
         </choose>
     </select>
     <select id="findById" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
-        SELECT id, uid, content, title, publish, cdt
-        FROM ii_blogs
-        WHERE id = #{id}
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.category_id,
+               b.publish,
+               b.cdt,
+               c.name     as category,
+               u.username as uname
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+        WHERE b.id = #{id}
     </select>
     <select id="findByUid" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT id, uid, content, title, publish, cdt
@@ -44,6 +54,22 @@
                  INNER JOIN ii_users u ON b.uid = u.id
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
         WHERE u.username = #{uname}
+    </select>
+    <select id="findByIdWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.publish,
+               b.cdt,
+               c.name                           AS category,
+               u.username                       AS uname,
+               IFNULL((bm.uid = #{uid}), false) AS bookmark
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+                 LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE b.id = #{id}
     </select>
     <select id="findByUnameWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT b.id,
@@ -105,4 +131,7 @@
         FROM ii_blogs
         WHERE id = #{id}
     </select>
+    <delete id="delete">
+        DELETE FROM ii_blogs WHERE id = #{id} AND uid = #{uid}
+    </delete>
 </mapper>

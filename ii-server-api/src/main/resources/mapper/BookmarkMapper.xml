@@ -5,7 +5,7 @@
 <mapper namespace="com.natsukashiiz.iiserverapi.mapper.BookmarkMapper">
     <resultMap id="outerResultMap" type="com.natsukashiiz.iiserverapi.model.response.BookmarkResponse">
         <id property="id" column="id"/>
-        <collection property="blogs" ofType="com.natsukashiiz.iiserverapi.model.response.BlogResponse" resultMap="innerResultMap"/>
+        <collection property="blog" ofType="com.natsukashiiz.iiserverapi.model.response.BlogResponse" resultMap="innerResultMap"/>
     </resultMap>
     <resultMap id="innerResultMap" type="com.natsukashiiz.iiserverapi.model.response.BlogResponse">
         <id property="id" column="blog_id"/>

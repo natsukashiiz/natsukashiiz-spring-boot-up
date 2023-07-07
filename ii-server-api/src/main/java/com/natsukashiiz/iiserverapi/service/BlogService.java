@@ -35,16 +35,23 @@ public class BlogService {
     private UserMapper userMapper;
 
     public ResponseEntity<?> getById(UserDetailsImpl auth, Long id) {
-        Optional<IIBlog> opt = blogMapper.findById(id);
+        Optional<IIBlog> opt;
+        if (Objects.isNull(auth)) {
+            opt = blogMapper.findById(id);
+        } else {
+            opt = blogMapper.findByIdWithBookmark(id, auth.getId());
+        }
+
         if (!opt.isPresent()) {
             return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
         }
+
         return ResponseUtil.success(buildResponse(opt.get()));
     }
 
     public ResponseEntity<?> getAll(UserDetailsImpl auth, Pagination pagination) {
         List<IIBlog> blogs;
-        if (Objects.isNull(auth.getId())) {
+        if (Objects.isNull(auth)) {
             blogs = blogMapper.findAll();
         } else {
             blogs = blogMapper.findAllWithBookmark(auth.getId(), pagination);
@@ -61,7 +68,7 @@ public class BlogService {
             return ResponseUtil.error(ResponseState.NOT_FOUND);
         }
         List<IIBlog> blogs;
-        if (Objects.nonNull(auth.getId())) {
+        if (Objects.nonNull(auth)) {
             blogs = blogMapper.findByUnameWithBookmark(uname, auth.getId());
         } else {
             blogs = blogMapper.findByUname(uname);
@@ -123,6 +130,19 @@ public class BlogService {
         return ResponseUtil.success();
     }
 
+    public ResponseEntity<?> delete(UserDetailsImpl auth, Long id) {
+        IIBlog find = new IIBlog();
+        find.setId(id);
+        find.setUid(auth.getId());
+
+        Optional<IIBlog> opt = blogMapper.findOne(find);
+        if (!opt.isPresent()) {
+            return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
+        }
+
+        blogMapper.delete(id, auth.getId());
+        return ResponseUtil.success();
+    }
 
     public static BlogResponse buildResponse(IIBlog blog) {
         return BlogResponse.builder()

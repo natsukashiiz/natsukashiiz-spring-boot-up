@@ -1,8 +1,13 @@
 package com.natsukashiiz.iiserverapi.model.response;
 
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
 public class BookmarkResponse {
     private Long id;
-    private BlogResponse blogs;
+    private BlogResponse blog;
 
     public Long getId() {
         return id;
@@ -13,12 +18,12 @@ public class BookmarkResponse {
         return this;
     }
 
-    public BlogResponse getBlogs() {
-        return blogs;
+    public BlogResponse getBlog() {
+        return blog;
     }
 
-    public BookmarkResponse setBlogs(BlogResponse blogs) {
-        this.blogs = blogs;
+    public BookmarkResponse setBlog(BlogResponse blog) {
+        this.blog = blog;
         return this;
     }
 }

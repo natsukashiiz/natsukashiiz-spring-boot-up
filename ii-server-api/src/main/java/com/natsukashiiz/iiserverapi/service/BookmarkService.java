@@ -3,6 +3,7 @@ package com.natsukashiiz.iiserverapi.service;
 import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iicommon.common.ResponseState;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
+import com.natsukashiiz.iiserverapi.entity.IIBlog;
 import com.natsukashiiz.iiserverapi.entity.IIBookmark;
 import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
 import com.natsukashiiz.iiserverapi.mapper.BookmarkMapper;
@@ -45,7 +46,8 @@ public class BookmarkService {
         bookmark.setUid(auth.getId());
         bookmarkMapper.save(bookmark);
 
-        return ResponseUtil.success();
+        IIBlog blog = blogMapper.findByIdWithBookmark(request.getBlogId(), auth.getId()).get();
+        return ResponseUtil.success(blog);
     }
 
     public ResponseEntity<?> remove(UserDetailsImpl auth, Long id) {

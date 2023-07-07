@@ -10,5 +10,4 @@ import java.time.LocalDateTime;
 public class CategoryResponse {
     private Long id;
     private String name;
-    private LocalDateTime cdt;
 }

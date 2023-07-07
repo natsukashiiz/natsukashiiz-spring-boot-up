@@ -21,6 +21,7 @@ public interface BlogMapper {
     List<IIBlog> findBy(@Param("entity") IIBlog entity, @Param("page") Pagination page);
 
     List<IIBlog> findByUname(@Param("uname") String uname);
+    Optional<IIBlog> findByIdWithBookmark(@Param("id") Long id, @Param("uid") Long uid);
     List<IIBlog> findByUnameWithBookmark(@Param("uname") String uname, @Param("uid") Long uid);
     List<IIBlog> findAll();
 
@@ -32,4 +33,5 @@ public interface BlogMapper {
 
     Integer publish(@Param("id") Long id, @Param("uid") Long uid);
     Boolean hasId(Long id);
+    Integer delete(@Param("id") Long id, @Param("uid") Long uid);
 }

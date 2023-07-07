@@ -60,4 +60,12 @@ public class BlogApi {
     ) {
         return blogService.publish(auth, id);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(
+            @AuthenticationPrincipal UserDetailsImpl auth,
+            @PathVariable Long id
+    ) {
+        return blogService.delete(auth, id);
+    }
 }

@@ -13,10 +13,9 @@
         <result property="content" column="content"/>
         <result property="publish" column="publish"/>
         <result property="cdt" column="cdt"/>
-        <result property="category" column="category"/>
         <result property="uid" column="uid"/>
         <result property="uname" column="uname"/>
-        <result property="bookmark" column="bookmark"/>
+        <result property="category" column="category"/>
     </resultMap>
 
     <select id="findByUid" resultMap="outerResultMap">
@@ -28,19 +27,18 @@
                b.cdt,
                b.uid,
                u.username AS uname,
-               c.id       AS categoryId,
                c.name     AS category
         FROM ii_bookmarks bm
                  INNER JOIN ii_blogs b ON bm.blog_id = b.id
                  INNER JOIN ii_categories c ON c.id = b.category_id
-                 INNER JOIN ii_users u on b.uid = u.id
+                 INNER JOIN ii_users u ON b.uid = u.id
         WHERE bm.uid = #{uid}
     </select>
     <select id="hasBlogIdAndUid" resultType="java.lang.Boolean">
         SELECT COUNT(*) FROM ii_bookmarks WHERE blog_id = #{blogId} AND uid = #{uid}
     </select>
     <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
-        INSERT INTO ii_bookmarks(blog_id, uid) VALUE(#{blogId}, #{uid})
+        INSERT INTO ii_bookmarks(blog_id, uid) VALUES(#{blogId}, #{uid})
     </insert>
     <delete id="remove">
         DELETE FROM ii_bookmarks WHERE blog_id = #{blogId} AND uid = #{uid}

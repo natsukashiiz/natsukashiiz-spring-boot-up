@@ -85,6 +85,22 @@
                  INNER JOIN ii_categories c ON b.category_id = c.id
                  INNER JOIN ii_users u ON b.uid = u.id
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE u.username = #{uname} AND b.publish = 1;
+    </select>
+    <select id="findBySelfWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.publish,
+               b.cdt,
+               c.name                           AS category,
+               u.username                       AS uname,
+               IFNULL((bm.uid = #{uid}), false) AS bookmark
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+                 LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
         WHERE u.username = #{uname}
     </select>
     <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
@@ -103,6 +119,7 @@
         INNER JOIN ii_categories c ON b.category_id = c.id
         INNER JOIN ii_users u ON b.uid = u.id
         LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE b.publish = 1
         ORDER BY id DESC
         <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>

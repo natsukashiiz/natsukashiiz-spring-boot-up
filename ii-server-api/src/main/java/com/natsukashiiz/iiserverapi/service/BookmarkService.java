@@ -4,7 +4,6 @@ import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iicommon.common.ResponseState;
 import com.natsukashiiz.iicommon.utils.Comm;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
-import com.natsukashiiz.iiserverapi.entity.IIBlog;
 import com.natsukashiiz.iiserverapi.entity.IIBookmark;
 import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
 import com.natsukashiiz.iiserverapi.mapper.BookmarkMapper;
@@ -29,7 +28,7 @@ public class BookmarkService {
 
     public ResponseEntity<?> getSelf(UserDetailsImpl auth) {
         List<BookmarkResponse> bookmarks = bookmarkMapper.findByUid(auth.getId());
-        return ResponseUtil.successList(buildResponse(bookmarks));
+        return ResponseUtil.successList(bookmarks);
     }
 
     public ResponseEntity<?> save(UserDetailsImpl auth, BookmarkRequest request) {
@@ -50,8 +49,7 @@ public class BookmarkService {
         bookmark.setUid(auth.getId());
         bookmarkMapper.save(bookmark);
 
-        IIBlog blog = blogMapper.findByIdWithBookmark(request.getBlogId(), auth.getId()).get();
-        return ResponseUtil.success(blog);
+        return ResponseUtil.success();
     }
 
     public ResponseEntity<?> remove(UserDetailsImpl auth, Long id) {
@@ -68,10 +66,10 @@ public class BookmarkService {
     }
 
     public static BookmarkResponse buildResponse(BookmarkResponse data) {
-        return BookmarkResponse.builder()
-                .id(data.getId())
-                .blog(buildBlog(data.getBlog()))
-                .build();
+        BookmarkResponse response = new BookmarkResponse();
+        response.setId(data.getId());
+        response.setBlog(buildBlog(data.getBlog()));
+        return response;
     }
 
     public static BlogResponse buildBlog(BlogResponse data) {

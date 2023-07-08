@@ -67,9 +67,14 @@ public class BlogService {
         if (!userMapper.hasUsername(uname)) {
             return ResponseUtil.error(ResponseState.NOT_FOUND);
         }
+
         List<IIBlog> blogs;
         if (Objects.nonNull(auth)) {
-            blogs = blogMapper.findByUnameWithBookmark(uname, auth.getId());
+            if (auth.getUsername().equals(uname)) {
+                blogs = blogMapper.findBySelfWithBookmark(uname, auth.getId());
+            } else {
+                blogs = blogMapper.findByUnameWithBookmark(uname, auth.getId());
+            }
         } else {
             blogs = blogMapper.findByUname(uname);
         }

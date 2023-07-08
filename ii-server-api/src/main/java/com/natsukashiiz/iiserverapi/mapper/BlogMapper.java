@@ -23,6 +23,7 @@ public interface BlogMapper {
     List<IIBlog> findByUname(@Param("uname") String uname);
     Optional<IIBlog> findByIdWithBookmark(@Param("id") Long id, @Param("uid") Long uid);
     List<IIBlog> findByUnameWithBookmark(@Param("uname") String uname, @Param("uid") Long uid);
+    List<IIBlog> findBySelfWithBookmark(@Param("uname") String uname, @Param("uid") Long uid);
     List<IIBlog> findAll();
 
     List<IIBlog> findAllWithBookmark(@Param("uid") Long uid, @Param("page") Pagination page);

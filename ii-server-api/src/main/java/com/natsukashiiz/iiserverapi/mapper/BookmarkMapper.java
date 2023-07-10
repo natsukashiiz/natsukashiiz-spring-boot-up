@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface BookmarkMapper {
-    List<BookmarkResponse> findByUid(Long uid);
+    List<IIBookmark> findByUid(Long uid);
 
     Integer save(IIBookmark entity);
 

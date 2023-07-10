@@ -54,6 +54,7 @@
                  INNER JOIN ii_users u ON b.uid = u.id
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
         WHERE u.username = #{uname}
+        ORDER BY b.id DESC
     </select>
     <select id="findByIdWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT b.id,
@@ -64,12 +65,12 @@
                b.cdt,
                c.name                           AS category,
                u.username                       AS uname,
-               IFNULL((bm.uid = #{uid}), false) AS bookmark
+               IF(bm.uid = #{uid}, true, false) AS bookmark
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
                  INNER JOIN ii_users u ON b.uid = u.id
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
-        WHERE b.id = #{id}
+        WHERE b.id = #{id} AND b.publish = 1
     </select>
     <select id="findByUnameWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT b.id,
@@ -80,12 +81,13 @@
                b.cdt,
                c.name                           AS category,
                u.username                       AS uname,
-               IFNULL((bm.uid = #{uid}), false) AS bookmark
+               IF(bm.uid = #{uid}, true, false) AS bookmark
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
                  INNER JOIN ii_users u ON b.uid = u.id
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
-        WHERE u.username = #{uname} AND b.publish = 1;
+        WHERE u.username = #{uname} AND b.publish = 1
+        ORDER BY b.id DESC
     </select>
     <select id="findBySelfWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT b.id,
@@ -96,12 +98,13 @@
                b.cdt,
                c.name                           AS category,
                u.username                       AS uname,
-               IFNULL((bm.uid = #{uid}), false) AS bookmark
+               IF(bm.uid = #{uid}, true, false) AS bookmark
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
                  INNER JOIN ii_users u ON b.uid = u.id
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
         WHERE u.username = #{uname}
+        ORDER BY b.id DESC
     </select>
     <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname
@@ -109,18 +112,18 @@
         INNER JOIN ii_categories c ON b.category_id = c.id
         INNER JOIN ii_users u ON b.uid = u.id
         LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
-        ORDER BY id DESC
+        ORDER BY b.id DESC
         <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
     <select id="findAllWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
-        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname
-        <if test="uid != null">, IFNULL((bm.uid = #{uid}), false) AS bookmark</if>
+        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname,
+               IF(bm.uid = #{uid}, true, false) AS bookmark
         FROM ii_blogs b
         INNER JOIN ii_categories c ON b.category_id = c.id
         INNER JOIN ii_users u ON b.uid = u.id
         LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
         WHERE b.publish = 1
-        ORDER BY id DESC
+        ORDER BY b.id DESC
         <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
     <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">

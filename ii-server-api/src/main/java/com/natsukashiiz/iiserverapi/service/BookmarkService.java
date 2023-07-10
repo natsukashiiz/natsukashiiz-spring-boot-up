@@ -2,13 +2,11 @@ package com.natsukashiiz.iiserverapi.service;
 
 import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iicommon.common.ResponseState;
-import com.natsukashiiz.iicommon.utils.Comm;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iiserverapi.entity.IIBookmark;
 import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
 import com.natsukashiiz.iiserverapi.mapper.BookmarkMapper;
 import com.natsukashiiz.iiserverapi.model.request.BookmarkRequest;
-import com.natsukashiiz.iiserverapi.model.response.BlogResponse;
 import com.natsukashiiz.iiserverapi.model.response.BookmarkResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -27,7 +25,10 @@ public class BookmarkService {
     private BlogMapper blogMapper;
 
     public ResponseEntity<?> getSelf(UserDetailsImpl auth) {
-        List<BookmarkResponse> bookmarks = bookmarkMapper.findByUid(auth.getId());
+        List<BookmarkResponse> bookmarks = bookmarkMapper.findByUid(auth.getId())
+                .stream()
+                .map(BookmarkService::buildResponse)
+                .collect(Collectors.toList());
         return ResponseUtil.successList(bookmarks);
     }
 
@@ -61,27 +62,10 @@ public class BookmarkService {
         return ResponseUtil.success();
     }
 
-    public static List<BookmarkResponse> buildResponse(List<BookmarkResponse> data) {
-        return data.stream().map(BookmarkService::buildResponse).collect(Collectors.toList());
-    }
-
-    public static BookmarkResponse buildResponse(BookmarkResponse data) {
-        BookmarkResponse response = new BookmarkResponse();
-        response.setId(data.getId());
-        response.setBlog(buildBlog(data.getBlog()));
-        return response;
-    }
-
-    public static BlogResponse buildBlog(BlogResponse data) {
-        return BlogResponse.builder()
+    public static BookmarkResponse buildResponse(IIBookmark data) {
+        return BookmarkResponse.builder()
                 .id(data.getId())
-                .title(data.getTitle())
-                .content(Comm.decodeString(data.getContent()))
-                .category(data.getCategory())
-                .publish(data.getPublish())
-                .uid(data.getUid())
-                .uname(data.getUname())
-                .cdt(data.getCdt())
+                .blog(BlogService.buildResponse(data.getBlog()))
                 .build();
     }
 }

@@ -10,6 +10,7 @@ public class IIBookmark implements Serializable {
     private Integer version;
     private LocalDateTime cdt;
     private LocalDateTime udt;
+    private IIBlog blog;
 
     public Long getId() {
         return id;
@@ -62,6 +63,15 @@ public class IIBookmark implements Serializable {
 
     public IIBookmark setUdt(LocalDateTime udt) {
         this.udt = udt;
+        return this;
+    }
+
+    public IIBlog getBlog() {
+        return blog;
+    }
+
+    public IIBookmark setBlog(IIBlog blog) {
+        this.blog = blog;
         return this;
     }
 }

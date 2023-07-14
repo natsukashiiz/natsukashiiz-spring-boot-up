@@ -51,6 +51,8 @@ public class JwtService {
                 .subject(UUID.randomUUID().toString())
                 .claim("uid", authentication.getUid())
                 .claim("name", authentication.getName())
+                .claim("email", authentication.getEmail())
+                .claim("avatar", authentication.getAvatar())
                 .build();
         return Token.builder()
                 .token(this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue())

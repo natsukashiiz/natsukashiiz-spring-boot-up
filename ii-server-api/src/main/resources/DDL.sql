@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS ii_users
     email    VARCHAR(30)                    NOT NULL UNIQUE COMMENT 'email',
     username VARCHAR(30)                    NOT NULL UNIQUE COMMENT 'username',
     password VARCHAR(255)                   NOT NULL COMMENT 'password',
+    avatar   VARCHAR(255)                   NULL COMMENT 'avatar',
     state    INTEGER                        NOT NULL DEFAULT 10 COMMENT '10:NORMAL, 20:DISABLED, 30:DESTROYED',
     version  INT UNSIGNED                   NOT NULL DEFAULT 0 COMMENT 'version',
     cdt      TIMESTAMP                               DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'created time',
@@ -66,8 +67,8 @@ CREATE TABLE IF NOT EXISTS ii_sign_history
 
 CREATE TABLE IF NOT EXISTS m_devices
 (
-    id   BIGINT UNSIGNED AUTO_INCREMENT      NOT NULL PRIMARY KEY COMMENT 'id',
-    `name` VARCHAR(20)                         NOT NULL COMMENT 'device name'
+    id     BIGINT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT 'id',
+    `name` VARCHAR(20)                    NOT NULL COMMENT 'device name'
 ) ENGINE = InnoDB
     COMMENT 'table devices';
 

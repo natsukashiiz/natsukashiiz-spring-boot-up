@@ -22,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -39,7 +40,11 @@ public class UserService {
     @Resource
     private UserMapper userMapper;
 
-    @Resource private SignHistoryMapper signHistoryMapper;
+    @Resource
+    private SignHistoryMapper signHistoryMapper;
+
+    @Resource
+    private FileService fileService;
 
     public ResponseEntity<?> getMe(UserDetailsImpl auth) {
         IIUser user = userMapper.findById(auth.getId()).get();
@@ -60,7 +65,7 @@ public class UserService {
 
         IIUser user = userMapper.findById(auth.getId()).get();
         user.setEmail(request.getEmail());
-        userMapper.save(user);
+        userMapper.update(user);
         UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
@@ -89,10 +94,29 @@ public class UserService {
         String passwordEncoded = passwordEncoder.encode(request.getNewPassword());
 
         user.setPassword(passwordEncoded);
-        userMapper.save(user);
+        userMapper.update(user);
         UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
+
+    public ResponseEntity<?> changeAvatar(UserDetailsImpl auth, MultipartFile file) {
+        if (Objects.isNull(file)) {
+            return ResponseUtil.error(ResponseState.INVALID_FILE);
+        }
+
+        IIUser user = userMapper.findById(auth.getId()).get();
+        String upload = this.fileService.upload(file);
+        if (Objects.isNull(upload)) {
+            log.debug("ChangeAvatar-[block]:(upload null)");
+            return ResponseUtil.error(ResponseState.INVALID_FILE);
+        }
+
+        user.setAvatar(upload);
+        userMapper.update(user);
+        UserResponse response = buildResponse(user);
+        return ResponseUtil.success(response);
+    }
+
 
     public ResponseEntity<?> create(RegisterRequest request) {
         // validate
@@ -215,6 +239,8 @@ public class UserService {
                 Authentication.builder()
                         .uid(user.getId())
                         .name(user.getUsername())
+                        .email(user.getEmail())
+                        .avatar(user.getAvatar() != null ? user.getAvatar() : "")
                         .build()
         );
     }
@@ -228,6 +254,7 @@ public class UserService {
                 .id(user.getId())
                 .email(user.getEmail())
                 .username(user.getUsername())
+                .avatar(user.getAvatar())
                 .cdt(user.getCdt())
                 .build();
     }

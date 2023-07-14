@@ -85,6 +85,7 @@ public class WebSecurityConfig {
                         auth.antMatchers(AUTH_WHITELIST).permitAll()
                                 .antMatchers(HttpMethod.GET, "/v1/blog/**").permitAll()
                                 .antMatchers(HttpMethod.GET, "/v1/categories/**").permitAll()
+                                .antMatchers(HttpMethod.GET, "/v1/files/**").permitAll()
                                 .anyRequest().authenticated()
                 )
 //                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)

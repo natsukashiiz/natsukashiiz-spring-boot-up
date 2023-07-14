@@ -8,6 +8,7 @@ public class IIUser implements Serializable {
     private String email;
     private String username;
     private String password;
+    private String avatar;
     private Integer state;
     private Integer version;
     private LocalDateTime cdt;
@@ -82,6 +83,15 @@ public class IIUser implements Serializable {
 
     public IIUser setUdt(LocalDateTime udt) {
         this.udt = udt;
+        return this;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public IIUser setAvatar(String avatar) {
+        this.avatar = avatar;
         return this;
     }
 }

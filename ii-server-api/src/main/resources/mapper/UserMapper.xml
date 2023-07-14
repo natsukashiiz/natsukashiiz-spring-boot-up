@@ -14,9 +14,9 @@
         <if test="state != null">state = #{state}</if>
     </select>
     <select id="findById" resultType="com.natsukashiiz.iiserverapi.entity.IIUser">
-        SELECT id, email, username, `password`, state FROM ii_users WHERE id = #{id}
+        SELECT id, email, username, `password`, avatar, state, cdt FROM ii_users WHERE id = #{id}
     </select>  <select id="findByUsername" resultType="com.natsukashiiz.iiserverapi.entity.IIUser">
-        SELECT id, email, username, `password`, state FROM ii_users WHERE username = #{username}
+        SELECT id, email, username, `password`, avatar, state FROM ii_users WHERE username = #{username}
     </select>
     <select id="hasId" resultType="java.lang.Boolean">
         SELECT EXISTS(SELECT 1 FROM ii_users WHERE id = #{id})
@@ -35,6 +35,7 @@
         <set>
             <if test="email != null">email = #{email}</if>
             <if test="password != null">,`password` = #{password}</if>
+            <if test="avatar != null">,avatar = #{avatar}</if>
             <if test="state != null">,state = #{state}</if>
         </set>
         WHERE id = #{id}

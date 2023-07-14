@@ -8,6 +8,7 @@ import com.natsukashiiz.iiserverapi.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/v1/users")
@@ -39,5 +40,10 @@ public class UserApi {
     @PatchMapping("/password")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDetailsImpl auth, @RequestBody ChangePasswordRequest request) {
         return userService.changePassword(auth, request);
+    }
+
+    @PatchMapping("/avatar")
+    public ResponseEntity<?> changeAvatar(@AuthenticationPrincipal UserDetailsImpl auth, @RequestParam("file") MultipartFile file) {
+        return userService.changeAvatar(auth, file);
     }
 }

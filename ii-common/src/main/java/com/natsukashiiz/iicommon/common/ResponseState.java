@@ -18,6 +18,7 @@ public enum ResponseState implements BaseState<ResponseState>{
     INVALID_CATEGORY_ID(221),
     INVALID_BLOG_ID(225),
     INVALID_REFRESH_TOKEN(230),
+    INVALID_FILE(240),
     EXISTED_EMAIL(310),
     EXISTED_USERNAME(311),
     EXISTED_BOOKMARK(312),

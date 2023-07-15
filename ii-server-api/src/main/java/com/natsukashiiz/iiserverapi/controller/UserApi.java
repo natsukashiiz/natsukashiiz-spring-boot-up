@@ -10,6 +10,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("/v1/users")
 public class UserApi {
@@ -42,8 +44,13 @@ public class UserApi {
         return userService.changePassword(auth, request);
     }
 
-    @PatchMapping("/avatar")
-    public ResponseEntity<?> changeAvatar(@AuthenticationPrincipal UserDetailsImpl auth, @RequestParam("file") MultipartFile file) {
-        return userService.changeAvatar(auth, file);
+    @PostMapping("/avatar")
+    public ResponseEntity<?> changeAvatar(@AuthenticationPrincipal UserDetailsImpl auth, @RequestParam("file") MultipartFile file, HttpServletRequest servlet) {
+        return userService.changeAvatar(auth, file, servlet);
+    }
+
+    @DeleteMapping("/avatar")
+    public ResponseEntity<?> removeAvatar(@AuthenticationPrincipal UserDetailsImpl auth) {
+        return userService.removeAvatar(auth);
     }
 }

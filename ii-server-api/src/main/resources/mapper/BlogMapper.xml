@@ -21,7 +21,8 @@
                b.publish,
                b.cdt,
                c.name     as category,
-               u.username as uname
+               u.username as uname,
+               u.avatar
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
                  INNER JOIN ii_users u ON b.uid = u.id
@@ -48,7 +49,8 @@
                b.publish,
                b.cdt,
                c.name                           AS category,
-               u.username                       AS uname
+               u.username                       AS uname,
+               u.avatar
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
                  INNER JOIN ii_users u ON b.uid = u.id
@@ -65,6 +67,7 @@
                b.cdt,
                c.name                           AS category,
                u.username                       AS uname,
+               u.avatar,
                IF(bm.uid = #{uid}, true, false) AS bookmark
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
@@ -81,6 +84,7 @@
                b.cdt,
                c.name                           AS category,
                u.username                       AS uname,
+               u.avatar,
                IF(bm.uid = #{uid}, true, false) AS bookmark
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
@@ -98,6 +102,7 @@
                b.cdt,
                c.name                           AS category,
                u.username                       AS uname,
+               u.avatar,
                IF(bm.uid = #{uid}, true, false) AS bookmark
         FROM ii_blogs b
                  INNER JOIN ii_categories c ON b.category_id = c.id
@@ -107,7 +112,7 @@
         ORDER BY b.id DESC
     </select>
     <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
-        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname
+        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, u.avatar
         FROM ii_blogs b
         INNER JOIN ii_categories c ON b.category_id = c.id
         INNER JOIN ii_users u ON b.uid = u.id
@@ -116,7 +121,7 @@
         <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
     <select id="findAllWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
-        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname,
+        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, u.avatar,
                IF(bm.uid = #{uid}, true, false) AS bookmark
         FROM ii_blogs b
         INNER JOIN ii_categories c ON b.category_id = c.id

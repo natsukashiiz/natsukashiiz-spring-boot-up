@@ -7,11 +7,13 @@ import com.natsukashiiz.iicommon.utils.Comm;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iicommon.utils.ValidateUtil;
 import com.natsukashiiz.iiserverapi.entity.IIBlog;
+import com.natsukashiiz.iiserverapi.entity.IIUser;
 import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
 import com.natsukashiiz.iiserverapi.mapper.CategoryMapper;
 import com.natsukashiiz.iiserverapi.mapper.UserMapper;
 import com.natsukashiiz.iiserverapi.model.request.BlogRequest;
 import com.natsukashiiz.iiserverapi.model.response.BlogResponse;
+import com.natsukashiiz.iiserverapi.model.response.UserBlogResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,9 @@ public class BlogService {
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private UserService userService;
 
     public ResponseEntity<?> getById(UserDetailsImpl auth, Long id) {
         Optional<IIBlog> opt;
@@ -68,6 +73,8 @@ public class BlogService {
             return ResponseUtil.error(ResponseState.NOT_FOUND);
         }
 
+        IIUser user = userMapper.findByUsername(uname).get();
+
         List<IIBlog> blogs;
         if (Objects.nonNull(auth)) {
             if (auth.getUsername().equals(uname)) {
@@ -79,7 +86,10 @@ public class BlogService {
             blogs = blogMapper.findByUname(uname);
         }
 
-        return ResponseUtil.successList(buildResponseList(blogs));
+        return ResponseUtil.success(UserBlogResponse.builder()
+                .user(userService.buildResponse(user))
+                .blog(buildResponseList(blogs))
+                .build());
     }
 
     public ResponseEntity<?> create(UserDetailsImpl auth, BlogRequest request) {
@@ -158,6 +168,8 @@ public class BlogService {
                 .publish(blog.isPublish())
                 .uid(blog.getUid())
                 .uname(blog.getUname())
+                .uname(blog.getUname())
+                .avatar(blog.getAvatar())
                 .bookmark(blog.isBookmark())
                 .cdt(blog.getCdt())
                 .build();

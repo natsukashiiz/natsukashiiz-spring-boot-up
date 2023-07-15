@@ -11,6 +11,7 @@ public class IIBlog implements Serializable {
     private Long categoryId;
     private Long uid;
     private String uname;
+    private String avatar;
     private boolean publish;
     private boolean bookmark;
     private Integer version;
@@ -125,6 +126,15 @@ public class IIBlog implements Serializable {
 
     public IIBlog setBookmark(boolean bookmark) {
         this.bookmark = bookmark;
+        return this;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public IIBlog setAvatar(String avatar) {
+        this.avatar = avatar;
         return this;
     }
 }

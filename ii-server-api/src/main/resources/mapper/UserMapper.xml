@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.natsukashiiz.iiserverapi.mapper.UserMapper">
     <select id="findOne" resultType="com.natsukashiiz.iiserverapi.entity.IIUser">
-        SELECT id, email, username, `password`, state FROM ii_users WHERE
+        SELECT id, email, username, `password`, avatar, state FROM ii_users WHERE
         <choose>
             <when test="id != null">id = #{id}</when>
             <otherwise>
@@ -16,7 +16,7 @@
     <select id="findById" resultType="com.natsukashiiz.iiserverapi.entity.IIUser">
         SELECT id, email, username, `password`, avatar, state, cdt FROM ii_users WHERE id = #{id}
     </select>  <select id="findByUsername" resultType="com.natsukashiiz.iiserverapi.entity.IIUser">
-        SELECT id, email, username, `password`, avatar, state FROM ii_users WHERE username = #{username}
+        SELECT id, email, username, `password`, avatar, state, cdt FROM ii_users WHERE username = #{username}
     </select>
     <select id="hasId" resultType="java.lang.Boolean">
         SELECT EXISTS(SELECT 1 FROM ii_users WHERE id = #{id})

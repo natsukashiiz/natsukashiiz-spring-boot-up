@@ -20,7 +20,7 @@ public class ValidateUtil {
     }
 
     public static boolean invalidPassword(String str) {
-        return Objects.isNull(str) || notRange(str, 8, 30);
+        return Objects.isNull(str) || notRange(str, 6, 30);
     }
 
     public static boolean invalidJPG(String type) {

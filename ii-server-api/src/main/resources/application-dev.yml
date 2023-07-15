@@ -5,6 +5,10 @@ mybatis:
 spring:
   main:
     allow-circular-references: true
+  servlet:
+    multipart:
+      max-file-size: 12MB
+      max-request-size: 12MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://185.78.165.239:3306/blog_test?useUnicode=yes&characterEncoding=UTF-8

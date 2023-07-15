@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -99,7 +100,7 @@ public class UserService {
         return ResponseUtil.success(response);
     }
 
-    public ResponseEntity<?> changeAvatar(UserDetailsImpl auth, MultipartFile file) {
+    public ResponseEntity<?> changeAvatar(UserDetailsImpl auth, MultipartFile file,HttpServletRequest servlet) {
         if (Objects.isNull(file)) {
             return ResponseUtil.error(ResponseState.INVALID_FILE);
         }
@@ -111,7 +112,20 @@ public class UserService {
             return ResponseUtil.error(ResponseState.INVALID_FILE);
         }
 
-        user.setAvatar(upload);
+        String baseUrl = ServletUriComponentsBuilder.fromRequestUri(servlet)
+                .replacePath(null)
+                .build()
+                .toUriString();
+
+        user.setAvatar(baseUrl+"/v1/files/"+upload);
+        userMapper.update(user);
+        UserResponse response = buildResponse(user);
+        return ResponseUtil.success(response);
+    }
+
+    public ResponseEntity<?> removeAvatar(UserDetailsImpl auth) {
+        IIUser user = userMapper.findById(auth.getId()).get();
+        user.setAvatar("");
         userMapper.update(user);
         UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
@@ -240,7 +254,7 @@ public class UserService {
                         .uid(user.getId())
                         .name(user.getUsername())
                         .email(user.getEmail())
-                        .avatar(user.getAvatar() != null ? user.getAvatar() : "")
+                        .avatar(user.getAvatar())
                         .build()
         );
     }

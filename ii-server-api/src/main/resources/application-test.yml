@@ -1,0 +1,32 @@
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+spring:
+  main:
+    allow-circular-references: true
+  servlet:
+    multipart:
+      max-file-size: 12MB
+      max-request-size: 12MB
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://185.78.165.239:3306/blog_db?useUnicode=yes&characterEncoding=UTF-8
+    username: root
+    password: YmIUGQw6KeJmIPnG??&xh!
+  jpa:
+    show-sql: false
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+ii:
+  jwt:
+    issuer: natsukashiiz
+    expirationMs: 31556952000
+    private-key: classpath:certs/private.pem
+    public-key: classpath:certs/public.pem
+server:
+  port: 8080
+logging:
+  level:
+    com.natsukashiiz.iiserverapi: DEBUG

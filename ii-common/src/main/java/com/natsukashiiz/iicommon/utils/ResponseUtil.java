@@ -22,6 +22,17 @@ public class ResponseUtil {
         return ResponseEntity.ok(response);
     }
 
+    public static <E> ResponseEntity<?> success(E result, Long count) {
+        ResponseState code = ResponseState.SUCCESS;
+        BaseResponse<?> response = BaseResponse.builder()
+                .code(code.getValue())
+                .text(code)
+                .result(result)
+                .records(count)
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
     public static <E> ResponseEntity<?> successList(List<E> result) {
         ResponseState code = ResponseState.SUCCESS;
         BaseResponse<?> response = BaseResponse.builder()
@@ -29,6 +40,17 @@ public class ResponseUtil {
                 .text(code)
                 .result(result)
                 .records((long) result.size())
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    public static <E> ResponseEntity<?> successList(List<E> result, Long records) {
+        ResponseState code = ResponseState.SUCCESS;
+        BaseResponse<?> response = BaseResponse.builder()
+                .code(code.getValue())
+                .text(code)
+                .result(result)
+                .records(records)
                 .build();
         return ResponseEntity.ok(response);
     }

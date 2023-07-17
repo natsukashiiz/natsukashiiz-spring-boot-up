@@ -57,6 +57,7 @@
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
         WHERE u.username = #{uname}
         ORDER BY b.id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
     <select id="findByIdWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT b.id,
@@ -92,6 +93,7 @@
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
         WHERE u.username = #{uname} AND b.publish = 1
         ORDER BY b.id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
     <select id="findBySelfWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT b.id,
@@ -110,6 +112,7 @@
                  LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
         WHERE u.username = #{uname}
         ORDER BY b.id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>
     <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
         SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, u.avatar
@@ -159,4 +162,14 @@
     <delete id="delete">
         DELETE FROM ii_blogs WHERE id = #{id} AND uid = #{uid}
     </delete>
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM ii_blogs
+    </select>
+    <select id="countByUname" resultType="java.lang.Long">
+        SELECT COUNT(b.id)
+        FROM ii_blogs b
+        INNER JOIN ii_users u
+        ON b.uid = u.id
+        WHERE u.username = #{uname}
+    </select>
 </mapper>

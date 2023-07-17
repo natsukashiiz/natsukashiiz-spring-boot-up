@@ -55,13 +55,14 @@ public class BlogService {
     }
 
     public ResponseEntity<?> getAll(UserDetailsImpl auth, Pagination pagination) {
+        Long count = blogMapper.count();
         List<IIBlog> blogs;
         if (Objects.isNull(auth)) {
-            blogs = blogMapper.findAll();
+            blogs = blogMapper.findAll(pagination);
         } else {
             blogs = blogMapper.findAllWithBookmark(auth.getId(), pagination);
         }
-        return ResponseUtil.successList(buildResponseList(blogs));
+        return ResponseUtil.successList(buildResponseList(blogs), count);
     }
 
     public ResponseEntity<?> getByUser(UserDetailsImpl auth, String uname, Pagination pagination) {
@@ -74,22 +75,25 @@ public class BlogService {
         }
 
         IIUser user = userMapper.findByUsername(uname).get();
+        Long count = blogMapper.countByUname(uname);
 
         List<IIBlog> blogs;
         if (Objects.nonNull(auth)) {
             if (auth.getUsername().equals(uname)) {
-                blogs = blogMapper.findBySelfWithBookmark(uname, auth.getId());
+                blogs = blogMapper.findBySelfWithBookmark(uname, auth.getId(), pagination);
             } else {
-                blogs = blogMapper.findByUnameWithBookmark(uname, auth.getId());
+                blogs = blogMapper.findByUnameWithBookmark(uname, auth.getId(), pagination);
             }
         } else {
-            blogs = blogMapper.findByUname(uname);
+            blogs = blogMapper.findByUname(uname, pagination);
         }
 
         return ResponseUtil.success(UserBlogResponse.builder()
                 .user(userService.buildResponse(user))
                 .blog(buildResponseList(blogs))
-                .build());
+                .build(),
+                count
+                );
     }
 
     public ResponseEntity<?> create(UserDetailsImpl auth, BlogRequest request) {

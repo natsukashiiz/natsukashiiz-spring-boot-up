@@ -120,6 +120,7 @@
         INNER JOIN ii_categories c ON b.category_id = c.id
         INNER JOIN ii_users u ON b.uid = u.id
         LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE b.publish = 1
         ORDER BY b.id DESC
         <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
     </select>

@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public class IISignHistory implements Serializable {
     private Long id;
     private Integer device;
+    private String deviceName;
     private String ipv4;
     private String ua;
     private Long uid;
@@ -28,6 +29,15 @@ public class IISignHistory implements Serializable {
 
     public IISignHistory setDevice(Integer device) {
         this.device = device;
+        return this;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public IISignHistory setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
         return this;
     }
 

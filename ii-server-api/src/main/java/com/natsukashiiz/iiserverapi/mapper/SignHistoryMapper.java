@@ -9,4 +9,5 @@ import java.util.List;
 public interface SignHistoryMapper {
     List<IISignHistory> findByUid(@Param("uid") Long uid,@Param("page") Pagination page);
     Integer save(IISignHistory entity);
+    Long countByUid(Long uid);
 }

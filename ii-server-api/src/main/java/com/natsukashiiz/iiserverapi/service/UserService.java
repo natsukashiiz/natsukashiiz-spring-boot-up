@@ -54,8 +54,9 @@ public class UserService {
     }
 
     public ResponseEntity<?> signHistory(UserDetailsImpl auth, Pagination paginate) {
+        Long count = signHistoryMapper.countByUid(auth.getId());
         List<IISignHistory> histories = signHistoryMapper.findByUid(auth.getId(), paginate);
-        return ResponseUtil.successList(histories);
+        return ResponseUtil.successList(histories, count);
     }
 
 

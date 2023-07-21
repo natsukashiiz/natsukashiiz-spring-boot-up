@@ -15,6 +15,7 @@
         <result property="cdt" column="cdt"/>
         <result property="uid" column="uid"/>
         <result property="uname" column="uname"/>
+        <result property="avatar" column="avatar"/>
         <result property="category" column="category"/>
         <result property="bookmark" column="bookmark"/>
     </resultMap>
@@ -28,6 +29,7 @@
                b.cdt,
                b.uid,
                u.username AS uname,
+               u.avatar,
                c.name     AS category,
                IFNULL((bm.uid = #{uid}), false) AS bookmark
         FROM ii_bookmarks bm

@@ -15,7 +15,7 @@ server:
   port: 910
 ii:
   jwt:
-    issuer: natsukashiiz
+    issuer: natsukashiiz.xyz
     expirationMs: 3600000
     private-key: classpath:certs/private.pem
     public-key: classpath:certs/public.pem

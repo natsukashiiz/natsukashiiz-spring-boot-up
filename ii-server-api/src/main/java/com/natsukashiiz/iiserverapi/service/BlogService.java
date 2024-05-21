@@ -6,54 +6,63 @@ import com.natsukashiiz.iicommon.model.Pagination;
 import com.natsukashiiz.iicommon.utils.Comm;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iicommon.utils.ValidateUtil;
-import com.natsukashiiz.iiserverapi.Utils;
-import com.natsukashiiz.iiserverapi.entity.Blog;
-import com.natsukashiiz.iiserverapi.entity.Bookmark;
-import com.natsukashiiz.iiserverapi.entity.Category;
-import com.natsukashiiz.iiserverapi.entity.User;
+import com.natsukashiiz.iiserverapi.entity.IIBlog;
+import com.natsukashiiz.iiserverapi.entity.IIUser;
+import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
+import com.natsukashiiz.iiserverapi.mapper.CategoryMapper;
+import com.natsukashiiz.iiserverapi.mapper.UserMapper;
 import com.natsukashiiz.iiserverapi.model.request.BlogRequest;
 import com.natsukashiiz.iiserverapi.model.response.BlogResponse;
-import com.natsukashiiz.iiserverapi.repository.BlogRepository;
-import com.natsukashiiz.iiserverapi.repository.UserRepository;
+import com.natsukashiiz.iiserverapi.model.response.UserBlogResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class BlogService {
-    private final BlogRepository blogRepository;
-    private final UserRepository userRepository;
+    @Resource
+    private BlogMapper blogMapper;
 
-    public BlogService(BlogRepository blogRepository, UserRepository userRepository) {
-        this.blogRepository = blogRepository;
-        this.userRepository = userRepository;
-    }
+    @Resource
+    private CategoryMapper categoryMapper;
+
+    @Resource
+    private UserMapper userMapper;
+
+    @Resource
+    private UserService userService;
 
     public ResponseEntity<?> getById(UserDetailsImpl auth, Long id) {
-        Optional<Blog> opt = blogRepository.findById(id);
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.NOT_FOUND);
+        Optional<IIBlog> opt;
+        if (Objects.isNull(auth)) {
+            opt = blogMapper.findById(id);
+        } else {
+            opt = blogMapper.findByIdWithBookmark(id, auth.getId());
         }
+
+        if (!opt.isPresent()) {
+            return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
+        }
+
         return ResponseUtil.success(buildResponse(opt.get()));
     }
 
     public ResponseEntity<?> getAll(UserDetailsImpl auth, Pagination pagination) {
-        long count = blogRepository.count();
-        if (count == 0) {
-            return ResponseUtil.error(ResponseState.NO_DATA);
+        Long count = blogMapper.count();
+        List<IIBlog> blogs;
+        if (Objects.isNull(auth)) {
+            blogs = blogMapper.findAll(pagination);
+        } else {
+            blogs = blogMapper.findAllWithBookmark(auth.getId(), pagination);
         }
-        Pageable paginate = Comm.getPaginate(pagination);
-        Page<Blog> page = blogRepository.findByPublish(true, paginate);
-        return ResponseUtil.successList(buildResponseList(page, paginate, auth.getId()));
+        return ResponseUtil.successList(buildResponseList(blogs), count);
     }
 
     public ResponseEntity<?> getByUser(UserDetailsImpl auth, String uname, Pagination pagination) {
@@ -61,110 +70,116 @@ public class BlogService {
             return ResponseUtil.error(ResponseState.INVALID_USERNAME);
         }
 
-        Optional<User> opt = userRepository.findByUsername(uname);
-        if (!opt.isPresent()) {
+        if (!userMapper.hasUsername(uname)) {
             return ResponseUtil.error(ResponseState.NOT_FOUND);
         }
 
-        Pageable paginate = Comm.getPaginate(pagination);
-        User user = opt.get();
-        Page<Blog> page = blogRepository.findByUser(user, paginate);
-        return ResponseUtil.successList(buildResponseList(page, paginate, auth.getId()));
+        IIUser user = userMapper.findByUsername(uname).get();
+        Long count = blogMapper.countByUname(uname);
+
+        List<IIBlog> blogs;
+        if (Objects.nonNull(auth)) {
+            if (auth.getUsername().equals(uname)) {
+                blogs = blogMapper.findBySelfWithBookmark(uname, auth.getId(), pagination);
+            } else {
+                blogs = blogMapper.findByUnameWithBookmark(uname, auth.getId(), pagination);
+            }
+        } else {
+            blogs = blogMapper.findByUname(uname, pagination);
+        }
+
+        return ResponseUtil.success(UserBlogResponse.builder()
+                .user(userService.buildResponse(user))
+                .blog(buildResponseList(blogs))
+                .build(),
+                count
+                );
     }
 
     public ResponseEntity<?> create(UserDetailsImpl auth, BlogRequest request) {
         if (Objects.isNull(request.getTitle())) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+            return ResponseUtil.error(ResponseState.INVALID_TITLE);
         }
 
         if (Objects.isNull(request.getContent())) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+            return ResponseUtil.error(ResponseState.INVALID_CONTENT);
         }
 
         if (Objects.isNull(request.getCategoryId())) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+            return ResponseUtil.error(ResponseState.INVALID_CATEGORY_ID);
         }
 
-        Category category = new Category();
-        category.setId(request.getCategoryId());
+        if (!categoryMapper.hasId(request.getCategoryId())) {
+            return ResponseUtil.error(ResponseState.CATEGORY_NOT_FOUND);
+        }
 
-        Blog blog = new Blog();
+        IIBlog blog = new IIBlog();
+        blog.setUid(auth.getId());
         blog.setTitle(request.getTitle());
         blog.setContent(Comm.encodeString(request.getContent()));
-        blog.setCategory(category);
-        blog.setUser(Utils.getUserFromAuth(auth));
+        blog.setCategoryId(request.getCategoryId());
 
-        Blog save = blogRepository.save(blog);
-        return ResponseUtil.success(buildResponse(save));
+        blogMapper.save(blog);
+        return ResponseUtil.success(buildResponse(blog));
     }
 
     public ResponseEntity<?> update(UserDetailsImpl auth, Long id, BlogRequest request) {
-        Optional<Blog> opt = blogRepository.findByIdAndUser(id, Utils.getUserFromAuth(auth));
+        IIBlog find = new IIBlog();
+        find.setId(id);
+        find.setUid(auth.getId());
+
+        Optional<IIBlog> opt = blogMapper.findOne(find);
         if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.NOT_FOUND);
+            return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
         }
 
-        Blog blog = opt.get();
-        if (Objects.nonNull(request.getTitle())) {
-            blog.setTitle(request.getTitle());
-        }
-
-        if (Objects.nonNull(request.getContent())) {
-            blog.setContent(Comm.encodeString(request.getContent()));
-        }
-
-        if (Objects.nonNull(request.getCategoryId())) {
-            Category category = new Category();
-            category.setId(request.getCategoryId());
-            blog.setCategory(category);
-        }
-
-        Blog save = blogRepository.save(blog);
-        return ResponseUtil.success(buildResponse(save));
+        IIBlog blog = opt.get();
+        blog.setTitle(request.getTitle());
+        blog.setContent(Comm.encodeString(request.getContent()));
+        blog.setCategoryId(request.getCategoryId());
+        blogMapper.update(blog);
+        return ResponseUtil.success(buildResponse(blog));
     }
 
     public ResponseEntity<?> publish(UserDetailsImpl auth, Long id) {
-        Optional<Blog> opt = blogRepository.findByIdAndUser(id, Utils.getUserFromAuth(auth));
+        Integer publish = blogMapper.publish(id, auth.getId());
+        if (publish == 0) {
+            return ResponseUtil.unknown();
+        }
+        return ResponseUtil.success();
+    }
+
+    public ResponseEntity<?> delete(UserDetailsImpl auth, Long id) {
+        IIBlog find = new IIBlog();
+        find.setId(id);
+        find.setUid(auth.getId());
+
+        Optional<IIBlog> opt = blogMapper.findOne(find);
         if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.NOT_FOUND);
+            return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
         }
 
-        Blog blog = opt.get();
-        blog.setPublish(!blog.isPublish());
-
-        Blog save = blogRepository.save(blog);
-        return ResponseUtil.success(buildResponse(save));
+        blogMapper.delete(id, auth.getId());
+        return ResponseUtil.success();
     }
 
-
-    public static BlogResponse buildResponse(Blog blog) {
-        return buildResponse(blog, null);
-    }
-
-    public static BlogResponse buildResponse(Blog blog, Long uid) {
+    public static BlogResponse buildResponse(IIBlog blog) {
         return BlogResponse.builder()
                 .id(blog.getId())
                 .title(blog.getTitle())
                 .content(Comm.decodeString(blog.getContent()))
-                .category(blog.getCategory().getName())
+                .category(blog.getCategory())
                 .publish(blog.isPublish())
+                .uid(blog.getUid())
+                .uname(blog.getUname())
+                .uname(blog.getUname())
+                .avatar(blog.getAvatar())
+                .bookmark(blog.isBookmark())
                 .cdt(blog.getCdt())
-                .uid(blog.getUser().getId())
-                .uname(blog.getUser().getUsername())
-                .bookmark(uid != null && bookmarked(blog.getBookmarks(), uid))
                 .build();
     }
 
-    public static boolean bookmarked(Set<Bookmark> bookmarks, Long uid) {
-        Bookmark bookmark = bookmarks.stream().filter(e -> Objects.equals(e.getUser().getId(), uid)).findAny().orElse(null);
-        return !Objects.isNull(bookmark);
-    }
-
-    public static Page<BlogResponse> buildResponseList(Page<Blog> data, Pageable pageable) {
-        return buildResponseList(data, pageable, null);
-    }
-
-    public static Page<BlogResponse> buildResponseList(Page<Blog> data, Pageable pageable, Long uid) {
-        return data.stream().map(e -> buildResponse(e, uid)).collect(Collectors.collectingAndThen(Collectors.toList(), list -> new PageImpl<>(list, pageable, list.size())));
+    public static List<BlogResponse> buildResponseList(List<IIBlog> data) {
+        return data.stream().map(BlogService::buildResponse).collect(Collectors.toList());
     }
 }

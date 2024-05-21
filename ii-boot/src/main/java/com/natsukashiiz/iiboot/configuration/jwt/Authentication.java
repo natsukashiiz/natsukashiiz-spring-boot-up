@@ -12,4 +12,6 @@ import lombok.NoArgsConstructor;
 public class Authentication {
     private Long uid;
     private String name;
+    private String email;
+    private String avatar;
 }

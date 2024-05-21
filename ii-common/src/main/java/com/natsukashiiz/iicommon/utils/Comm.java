@@ -1,13 +1,9 @@
 package com.natsukashiiz.iicommon.utils;
 
 import com.natsukashiiz.iicommon.common.DeviceState;
-import com.natsukashiiz.iicommon.model.Pagination;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +21,7 @@ public class Comm {
         byte[] decodedBytes = Base64.getDecoder().decode(str);
         return new String(decodedBytes);
     }
+
     public static String getUserAgent(HttpServletRequest request) {
         return request.getHeader(HttpHeaders.USER_AGENT);
     }
@@ -35,10 +32,6 @@ public class Comm {
             return ipFromHeader;
         }
         return request.getRemoteAddr();
-    }
-
-    public static Pageable getPaginate(Pagination paginate) {
-        return PageRequest.of(paginate.getPage() > 0 ? paginate.getPage() - 1 : 0, paginate.getLimit(), Sort.Direction.fromString(paginate.getSortType()), paginate.getSortBy());
     }
 
     public static Integer getDeviceType(String userAgent) {
@@ -67,12 +60,12 @@ public class Comm {
         BeanUtils.copyProperties(src, target, getNullPropertyNames(src));
     }
 
-    public static String[] getNullPropertyNames (Object source) {
+    public static String[] getNullPropertyNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);
         java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();
 
         Set<String> emptyNames = new HashSet<String>();
-        for(java.beans.PropertyDescriptor pd : pds) {
+        for (java.beans.PropertyDescriptor pd : pds) {
             Object srcValue = src.getPropertyValue(pd.getName());
             if (srcValue == null) emptyNames.add(pd.getName());
         }

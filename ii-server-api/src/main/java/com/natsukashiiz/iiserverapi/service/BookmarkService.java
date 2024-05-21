@@ -3,66 +3,69 @@ package com.natsukashiiz.iiserverapi.service;
 import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iicommon.common.ResponseState;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
-import com.natsukashiiz.iiserverapi.Utils;
-import com.natsukashiiz.iiserverapi.entity.Blog;
-import com.natsukashiiz.iiserverapi.entity.Bookmark;
-import com.natsukashiiz.iiserverapi.entity.User;
+import com.natsukashiiz.iiserverapi.entity.IIBookmark;
+import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
+import com.natsukashiiz.iiserverapi.mapper.BookmarkMapper;
 import com.natsukashiiz.iiserverapi.model.request.BookmarkRequest;
-import com.natsukashiiz.iiserverapi.model.response.BlogResponse;
-import com.natsukashiiz.iiserverapi.repository.BookmarkRepository;
-import lombok.extern.slf4j.Slf4j;
+import com.natsukashiiz.iiserverapi.model.response.BookmarkResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class BookmarkService {
-    private final BookmarkRepository bookmarkRepository;
+    @Resource
+    private BookmarkMapper bookmarkMapper;
 
-    public BookmarkService(BookmarkRepository bookmarkRepository) {
-        this.bookmarkRepository = bookmarkRepository;
+    @Resource
+    private BlogMapper blogMapper;
+
+    public ResponseEntity<?> getSelf(UserDetailsImpl auth) {
+        List<BookmarkResponse> bookmarks = bookmarkMapper.findByUid(auth.getId())
+                .stream()
+                .map(BookmarkService::buildResponse)
+                .collect(Collectors.toList());
+        return ResponseUtil.successList(bookmarks);
     }
 
-    public ResponseEntity<?> getAll(UserDetailsImpl auth) {
-        List<Bookmark> list = bookmarkRepository.findAllByUser(Utils.getUserFromAuth(auth));
-        List<BlogResponse> response = list.stream().map(e -> BlogService.buildResponse(e.getBlog())).collect(Collectors.toList());
-        return ResponseUtil.success(response);
-    }
-
-    public ResponseEntity<?> add(UserDetailsImpl auth, BookmarkRequest request) {
-
+    public ResponseEntity<?> save(UserDetailsImpl auth, BookmarkRequest request) {
         if (Objects.isNull(request.getBlogId())) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+            return ResponseUtil.error(ResponseState.INVALID_BLOG_ID);
         }
 
-        Blog blog = new Blog();
-        blog.setId(request.getBlogId());
-        User user = Utils.getUserFromAuth(auth);
-
-        long count = bookmarkRepository.countByBlogAndUser(blog, user);
-        if (count == 1) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+        if (!blogMapper.hasId(request.getBlogId())) {
+            return ResponseUtil.error(ResponseState.BLOG_NOT_FOUND);
         }
 
-        Bookmark bookmark = new Bookmark();
-        bookmark.setBlog(blog);
-        bookmark.setUser(user);
+        if (bookmarkMapper.hasBlogIdAndUid(request.getBlogId(), auth.getId())) {
+            return ResponseUtil.error(ResponseState.EXISTED_BOOKMARK);
+        }
 
-        // save
-        bookmarkRepository.save(bookmark);
+        IIBookmark bookmark = new IIBookmark();
+        bookmark.setBlogId(request.getBlogId());
+        bookmark.setUid(auth.getId());
+        bookmarkMapper.save(bookmark);
+
         return ResponseUtil.success();
     }
 
-    @Transactional
     public ResponseEntity<?> remove(UserDetailsImpl auth, Long id) {
-        Blog blog = new Blog();
-        blog.setId(id);
-        bookmarkRepository.deleteByBlogAndUser(blog, Utils.getUserFromAuth(auth));
+        if (!bookmarkMapper.hasBlogIdAndUid(id, auth.getId())) {
+            return ResponseUtil.error(ResponseState.BOOKMARK_NOT_FOUND);
+        }
+
+        bookmarkMapper.remove(id, auth.getId());
         return ResponseUtil.success();
+    }
+
+    public static BookmarkResponse buildResponse(IIBookmark data) {
+        return BookmarkResponse.builder()
+                .id(data.getId())
+                .blog(BlogService.buildResponse(data.getBlog()))
+                .build();
     }
 }

@@ -2,14 +2,18 @@ package com.natsukashiiz.iiserverapi.controller;
 
 import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iicommon.model.Pagination;
+import com.natsukashiiz.iiserverapi.mapper.BlogMapper;
 import com.natsukashiiz.iiserverapi.model.request.BlogRequest;
 import com.natsukashiiz.iiserverapi.service.BlogService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/blog")
+@Slf4j
 public class BlogApi {
     private final BlogService blogService;
 
@@ -55,5 +59,13 @@ public class BlogApi {
             @PathVariable Long id
     ) {
         return blogService.publish(auth, id);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(
+            @AuthenticationPrincipal UserDetailsImpl auth,
+            @PathVariable Long id
+    ) {
+        return blogService.delete(auth, id);
     }
 }

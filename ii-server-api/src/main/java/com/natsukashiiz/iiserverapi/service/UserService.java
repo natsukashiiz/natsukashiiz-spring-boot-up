@@ -4,63 +4,59 @@ import com.natsukashiiz.iiboot.configuration.jwt.Authentication;
 import com.natsukashiiz.iiboot.configuration.jwt.JwtService;
 import com.natsukashiiz.iiboot.configuration.jwt.UserDetailsImpl;
 import com.natsukashiiz.iiboot.configuration.jwt.model.TokenResponse;
+import com.natsukashiiz.iicommon.common.CommonState;
 import com.natsukashiiz.iicommon.common.ResponseState;
 import com.natsukashiiz.iicommon.model.Pagination;
 import com.natsukashiiz.iicommon.utils.Comm;
 import com.natsukashiiz.iicommon.utils.ResponseUtil;
 import com.natsukashiiz.iicommon.utils.ValidateUtil;
-import com.natsukashiiz.iiserverapi.entity.SignHistory;
-import com.natsukashiiz.iiserverapi.entity.User;
+import com.natsukashiiz.iiserverapi.entity.IISignHistory;
+import com.natsukashiiz.iiserverapi.entity.IIUser;
+import com.natsukashiiz.iiserverapi.mapper.SignHistoryMapper;
+import com.natsukashiiz.iiserverapi.mapper.UserMapper;
 import com.natsukashiiz.iiserverapi.model.request.*;
 import com.natsukashiiz.iiserverapi.model.response.UserResponse;
-import com.natsukashiiz.iiserverapi.repository.SignHistoryRepository;
-import com.natsukashiiz.iiserverapi.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 @Service
 @Slf4j
 public class UserService {
-    private final UserRepository userRepository;
-    private final SignHistoryRepository historyRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService tokenService;
+    @Resource
+    private PasswordEncoder passwordEncoder;
+    @Resource
+    private JwtService tokenService;
+    @Resource
+    private UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, SignHistoryRepository historyRepository, PasswordEncoder passwordEncoder, JwtService tokenService) {
-        this.userRepository = userRepository;
-        this.historyRepository = historyRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.tokenService = tokenService;
-    }
+    @Resource
+    private SignHistoryMapper signHistoryMapper;
+
+    @Resource
+    private FileService fileService;
 
     public ResponseEntity<?> getMe(UserDetailsImpl auth) {
-        Optional<User> opt = userRepository.findByUsername(auth.getUsername());
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.UNAUTHORIZED);
-        }
-
-        User user = opt.get();
-        log.info("DATA: {}", user.getBookmarks());
+        IIUser user = userMapper.findById(auth.getId()).get();
         UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
 
     public ResponseEntity<?> signHistory(UserDetailsImpl auth, Pagination paginate) {
-        Pageable pageable = Comm.getPaginate(paginate);
-        User user = new User();
-        user.setId(auth.getId());
-        Page<SignHistory> histories = historyRepository.findByUser(user, pageable);
-        return ResponseUtil.successList(histories);
+        Long count = signHistoryMapper.countByUid(auth.getId());
+        List<IISignHistory> histories = signHistoryMapper.findByUid(auth.getId(), paginate);
+        return ResponseUtil.successList(histories, count);
     }
 
 
@@ -68,15 +64,11 @@ public class UserService {
         if (ValidateUtil.invalidEmail(request.getEmail())) {
             return ResponseUtil.error(ResponseState.INVALID_EMAIL);
         }
-        Optional<User> opt = userRepository.findByUsername(auth.getUsername());
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.NOT_FOUND);
-        }
 
-        User user = opt.get();
+        IIUser user = userMapper.findById(auth.getId()).get();
         user.setEmail(request.getEmail());
-        User save = userRepository.save(user);
-        UserResponse response = buildResponse(save);
+        userMapper.update(user);
+        UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
 
@@ -93,12 +85,7 @@ public class UserService {
             return ResponseUtil.error(ResponseState.PASSWORD_NOT_MATCH);
         }
 
-        Optional<User> opt = userRepository.findByUsername(auth.getUsername());
-        if (!opt.isPresent()) {
-            return ResponseUtil.error(ResponseState.NOT_FOUND);
-        }
-
-        User user = opt.get();
+        IIUser user = userMapper.findById(auth.getId()).get();
 
         // check password
         if (matchPassword(request.getCurrentPassword(), user.getPassword())) {
@@ -109,10 +96,42 @@ public class UserService {
         String passwordEncoded = passwordEncoder.encode(request.getNewPassword());
 
         user.setPassword(passwordEncoded);
-        User save = userRepository.save(user);
-        UserResponse response = buildResponse(save);
+        userMapper.update(user);
+        UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
+
+    public ResponseEntity<?> changeAvatar(UserDetailsImpl auth, MultipartFile file,HttpServletRequest servlet) {
+        if (Objects.isNull(file)) {
+            return ResponseUtil.error(ResponseState.INVALID_FILE);
+        }
+
+        IIUser user = userMapper.findById(auth.getId()).get();
+        String upload = this.fileService.upload(file);
+        if (Objects.isNull(upload)) {
+            log.debug("ChangeAvatar-[block]:(upload null)");
+            return ResponseUtil.error(ResponseState.INVALID_FILE);
+        }
+
+        String baseUrl = ServletUriComponentsBuilder.fromRequestUri(servlet)
+                .replacePath(null)
+                .build()
+                .toUriString();
+
+        user.setAvatar(baseUrl+"/v1/files/"+upload);
+        userMapper.update(user);
+        UserResponse response = buildResponse(user);
+        return ResponseUtil.success(response);
+    }
+
+    public ResponseEntity<?> removeAvatar(UserDetailsImpl auth) {
+        IIUser user = userMapper.findById(auth.getId()).get();
+        user.setAvatar("");
+        userMapper.update(user);
+        UserResponse response = buildResponse(user);
+        return ResponseUtil.success(response);
+    }
+
 
     public ResponseEntity<?> create(RegisterRequest request) {
         // validate
@@ -136,12 +155,12 @@ public class UserService {
         String password = request.getPassword();
 
         // check email existed
-        if (userRepository.existsByEmail(email)) {
+        if (userMapper.hasEmail(email)) {
             return ResponseUtil.error(ResponseState.EXISTED_EMAIL);
         }
 
         // check username existed
-        if (userRepository.existsByUsername(username)) {
+        if (userMapper.hasUsername(username)) {
             return ResponseUtil.error(ResponseState.EXISTED_USERNAME);
         }
 
@@ -149,14 +168,15 @@ public class UserService {
         String passwordEncoded = passwordEncoder.encode(password);
 
         // to entity
-        User entity = new User();
-        entity.setEmail(email);
-        entity.setUsername(username);
-        entity.setPassword(passwordEncoded);
+        IIUser user = new IIUser();
+        user.setEmail(email);
+        user.setUsername(username);
+        user.setPassword(passwordEncoded);
+        user.setState(CommonState.NORMAL.getValue());
 
         // save
-        User save = userRepository.save(entity);
-        UserResponse response = buildResponse(save);
+        userMapper.save(user);
+        UserResponse response = buildResponse(user);
         return ResponseUtil.success(response);
     }
 
@@ -179,27 +199,29 @@ public class UserService {
         String username = request.getUsername();
         String password = request.getPassword();
 
+
         // check user in db
-        Optional<User> opt = userRepository.findByUsername(username);
+        Optional<IIUser> opt = userMapper.findOne(new IIUser().setUsername(username));
 
         if (!opt.isPresent()) {
             log.debug("Login-[block]:(not found)");
             return ResponseUtil.error(ResponseState.INVALID_USERNAME_PASSWORD);
         }
 
-        User user = opt.get();
+        IIUser user = opt.get();
         if (matchPassword(password, user.getPassword())) {
             log.debug("Login-[block]:(incorrect password)");
             return ResponseUtil.error(ResponseState.INVALID_USERNAME_PASSWORD);
         }
 
         // save signed history
-        SignHistory history = new SignHistory();
-        history.setUser(user);
+        IISignHistory history = new IISignHistory();
         history.setIpv4(ipv4);
         history.setDevice(Comm.getDeviceType(userAgent));
         history.setUa(userAgent);
-        historyRepository.save(history);
+        history.setUid(user.getId());
+
+        signHistoryMapper.save(history);
 
         // generate token
         return ResponseUtil.success(this.token(user));
@@ -207,7 +229,7 @@ public class UserService {
 
     public ResponseEntity<?> refreshToken(TokenRefreshRequest request) {
         if (Objects.isNull(request.getRefreshToken())) {
-            return ResponseUtil.error(ResponseState.INVALID_REQUEST);
+            return ResponseUtil.error(ResponseState.INVALID_REFRESH_TOKEN);
         }
 
         String refreshToken = request.getRefreshToken();
@@ -216,22 +238,24 @@ public class UserService {
         }
 
         String username = tokenService.getUsername(refreshToken);
-        Optional<User> opt = userRepository.findByUsername(username);
+        Optional<IIUser> opt = userMapper.findOne(new IIUser().setUsername(username));
         if (!opt.isPresent()) {
             return ResponseUtil.error(ResponseState.UNAUTHORIZED);
         }
-        User user = opt.get();
+        IIUser user = opt.get();
         TokenResponse token = token(user);
         return ResponseUtil.success(token);
     }
 
-    public TokenResponse token(User user) {
+    public TokenResponse token(IIUser user) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         return tokenService.generateToken(
                 Authentication.builder()
                         .uid(user.getId())
                         .name(user.getUsername())
+                        .email(user.getEmail())
+                        .avatar(user.getAvatar())
                         .build()
         );
     }
@@ -240,11 +264,12 @@ public class UserService {
         return !passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
-    public UserResponse buildResponse(User user) {
+    public UserResponse buildResponse(IIUser user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .username(user.getUsername())
+                .avatar(user.getAvatar())
                 .cdt(user.getCdt())
                 .build();
     }

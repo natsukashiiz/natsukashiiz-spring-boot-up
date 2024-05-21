@@ -2,14 +2,14 @@ package com.natsukashiiz.iicommon.common;
 
 import java.util.Optional;
 
-public enum DefaultState implements BaseState<DefaultState> {
-    ENABLED(10),
+public enum CommonState implements BaseState<CommonState> {
+    NORMAL(10),
     DISABLED(20),
     DESTROYED(30)
     ;
     private final Integer value;
 
-    DefaultState(final Integer code) {
+    CommonState(final Integer code) {
         this.value = code;
     }
 
@@ -19,8 +19,8 @@ public enum DefaultState implements BaseState<DefaultState> {
     }
 
     @Override
-    public Optional<DefaultState> find(Integer code) {
-        for (DefaultState values : DefaultState.values()) {
+    public Optional<CommonState> find(Integer code) {
+        for (CommonState values : CommonState.values()) {
             if (values.value.equals(code))
                 return Optional.of(values);
         }

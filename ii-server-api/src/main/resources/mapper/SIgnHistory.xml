@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.natsukashiiz.iiserverapi.mapper.SignHistoryMapper">
+    <select id="findByUid" resultType="com.natsukashiiz.iiserverapi.entity.IISignHistory">
+        SELECT sh.id, sh.ipv4, d.id AS device, d.name AS deviceName, sh.cdt
+        FROM ii_sign_history sh
+        INNER JOIN m_devices d ON d.id = sh.device
+        ORDER BY id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+    </select>
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO ii_sign_history(ipv4, ua, device, uid)
+        VALUES(#{ipv4}, #{ua}, #{device}, #{uid})
+    </insert>
+    <select id="countByUid" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM ii_sign_history WHERE uid = #{uid}
+    </select>
+</mapper>

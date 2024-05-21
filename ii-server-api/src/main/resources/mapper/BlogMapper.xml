@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.natsukashiiz.iiserverapi.mapper.BlogMapper">
+    <select id="findOne" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT id, uid, content, title, publish, cdt FROM ii_blogs WHERE
+        <choose>
+            <when test="id != null">id = #{id}</when>
+            <otherwise>
+                <if test="uid != null">uid = #{username}</if>
+            </otherwise>
+        </choose>
+    </select>
+    <select id="findById" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.category_id,
+               b.publish,
+               b.cdt,
+               c.name     as category,
+               u.username as uname,
+               u.avatar
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+        WHERE b.id = #{id}
+    </select>
+    <select id="findByUid" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT id, uid, content, title, publish, cdt
+        FROM ii_blogs
+        WHERE uid = #{uid}
+    </select>
+    <select id="findBy" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT id, uid, content, title, publish, cdt FROM ii_blogs
+        <where>
+            <if test="entity.uid != null">uid = #{entity.uid}</if>
+        </where>
+        ORDER BY id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+    </select>
+    <select id="findByUname" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.publish,
+               b.cdt,
+               c.name                           AS category,
+               u.username                       AS uname,
+               u.avatar
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+                 LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE u.username = #{uname} AND b.publish = 1
+        ORDER BY b.id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+    </select>
+    <select id="findByIdWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.publish,
+               b.cdt,
+               c.name                           AS category,
+               u.username                       AS uname,
+               u.avatar,
+               IF(bm.uid = #{uid}, true, false) AS bookmark
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+                 LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE b.id = #{id}
+    </select>
+    <select id="findByUnameWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.publish,
+               b.cdt,
+               c.name                           AS category,
+               u.username                       AS uname,
+               u.avatar,
+               IF(bm.uid = #{uid}, true, false) AS bookmark
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+                 LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE u.username = #{uname} AND b.publish = 1
+        ORDER BY b.id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+    </select>
+    <select id="findBySelfWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id,
+               b.uid,
+               b.content,
+               b.title,
+               b.publish,
+               b.cdt,
+               c.name                           AS category,
+               u.username                       AS uname,
+               u.avatar,
+               IF(bm.uid = #{uid}, true, false) AS bookmark
+        FROM ii_blogs b
+                 INNER JOIN ii_categories c ON b.category_id = c.id
+                 INNER JOIN ii_users u ON b.uid = u.id
+                 LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE u.username = #{uname}
+        ORDER BY b.id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+    </select>
+    <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, u.avatar
+        FROM ii_blogs b
+        INNER JOIN ii_categories c ON b.category_id = c.id
+        INNER JOIN ii_users u ON b.uid = u.id
+        LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE b.publish = 1
+        ORDER BY b.id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+    </select>
+    <select id="findAllWithBookmark" resultType="com.natsukashiiz.iiserverapi.entity.IIBlog">
+        SELECT b.id, b.uid, b.content, b.title, b.publish, b.cdt, c.name AS category, u.username AS uname, u.avatar,
+               IF(bm.uid = #{uid}, true, false) AS bookmark
+        FROM ii_blogs b
+        INNER JOIN ii_categories c ON b.category_id = c.id
+        INNER JOIN ii_users u ON b.uid = u.id
+        LEFT JOIN ii_bookmarks bm ON b.id = bm.blog_id
+        WHERE b.publish = 1
+        ORDER BY b.id DESC
+        <if test="page != null">LIMIT #{page.limit} OFFSET #{page.offset}</if>
+    </select>
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO ii_blogs(uid, title, content, category_id)
+        VALUES (#{uid}, #{title}, #{content}, #{categoryId})
+    </insert>
+    <update id="update">
+        UPDATE ii_blogs
+        <set>
+            <if test="title != null">title = #{title}</if>
+            <if test="content != null">,content = #{content}</if>
+            <if test="categoryId != null">,category_id = #{categoryId}</if>
+        </set>
+        WHERE id = #{id} AND uid = #{uid}
+    </update>
+    <update id="publish">
+        UPDATE ii_blogs
+        <set>
+            publish = !publish, version = version + 1
+        </set>
+        WHERE id = #{id} AND uid = #{uid}
+    </update>
+    <select id="hasId" resultType="java.lang.Boolean">
+        SELECT COUNT(1)
+        FROM ii_blogs
+        WHERE id = #{id}
+    </select>
+    <delete id="delete">
+        DELETE FROM ii_blogs WHERE id = #{id} AND uid = #{uid}
+    </delete>
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM ii_blogs
+    </select>
+    <select id="countByUname" resultType="java.lang.Long">
+        SELECT COUNT(b.id)
+        FROM ii_blogs b
+        INNER JOIN ii_users u
+        ON b.uid = u.id
+        WHERE u.username = #{uname}
+    </select>
+</mapper>

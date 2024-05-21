@@ -5,15 +5,11 @@ mybatis:
 spring:
   main:
     allow-circular-references: true
-  servlet:
-    multipart:
-      max-file-size: 12MB
-      max-request-size: 12MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://185.78.165.239:3306/blog_test?useUnicode=yes&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:6033/blog_test?useUnicode=yes&characterEncoding=UTF-8
     username: root
-    password: YmIUGQw6KeJmIPnG??&xh!
+    password: root
   jpa:
     show-sql: false
     generate-ddl: true
@@ -25,6 +21,7 @@ ii:
     expirationMs: 31556952000
     private-key: classpath:certs/private.pem
     public-key: classpath:certs/public.pem
+
 server:
   port: 8080
 logging:

@@ -7,27 +7,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
+
 @RestController
 @RequestMapping("/v1/bookmarks")
 public class BookmarkApi {
-    private final BookmarkService bookmarkService;
-
-    public BookmarkApi(BookmarkService bookmarkService) {
-        this.bookmarkService = bookmarkService;
-    }
+    @Resource
+    private BookmarkService bookmarkService;
 
     @GetMapping
-    public ResponseEntity<?> getAll(@AuthenticationPrincipal UserDetailsImpl auth) {
-        return bookmarkService.getAll(auth);
+    public ResponseEntity<?> getSelf(@AuthenticationPrincipal UserDetailsImpl auth) {
+        return bookmarkService.getSelf(auth);
     }
 
     @PostMapping
     public ResponseEntity<?> add(@AuthenticationPrincipal UserDetailsImpl auth, @RequestBody BookmarkRequest request) {
-        return bookmarkService.add(auth, request);
+        return bookmarkService.save(auth, request);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> remove(@AuthenticationPrincipal UserDetailsImpl auth, @PathVariable Long id) {
-        return bookmarkService.remove(auth, id);
+    @DeleteMapping("/{blogId}")
+    public ResponseEntity<?> remove(@AuthenticationPrincipal UserDetailsImpl auth, @PathVariable Long blogId) {
+        return bookmarkService.remove(auth, blogId);
     }
 }

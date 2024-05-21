@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.natsukashiiz.iiserverapi.mapper.CategoryMapper">
+    <select id="findAll" resultType="com.natsukashiiz.iiserverapi.entity.IICategory">
+        SELECT id, name FROM ii_categories
+    </select>
+    <select id="hasId" resultType="java.lang.Boolean">
+        SELECT COUNT(1) FROM ii_categories WHERE id = #{id}
+    </select>
+</mapper>
